@@ -15,7 +15,8 @@ import {
   X,
   ShieldCheck,
   CheckCircle2,
-  Star
+  Star,
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -33,6 +34,7 @@ export default function VirtualCards() {
   const [topupCardId, setTopupCardId] = useState<string | null>(null);
   const [topupAmount, setTopupAmount] = useState("");
   const [isTopupLoading, setIsTopupLoading] = useState(false);
+  const [topupFeedback, setTopupFeedback] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTxn, setLoadingTxn] = useState(true);
 
@@ -99,6 +101,7 @@ export default function VirtualCards() {
   const handleTopupCard = async () => {
     if (!topupCardId || !topupAmount) return;
     setIsTopupLoading(true);
+    setTopupFeedback(null);
     try {
       const token = localStorage.getItem("token");
       await axios.post(`http://localhost:5000/cards/${topupCardId}/topup`, 
@@ -109,8 +112,9 @@ export default function VirtualCards() {
       await refreshUser();
       setTopupCardId(null);
       setTopupAmount("");
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error topping up card", e);
+      setTopupFeedback(e?.response?.data?.message || "Erreur lors de l'alimentation.");
     } finally {
       setIsTopupLoading(false);
     }
@@ -561,6 +565,13 @@ export default function VirtualCards() {
               <p className="text-sm text-slate-500 mb-6">
                 Le montant sera déduit de votre solde principal (Solde: {formatBSD(user?.balance || 0)}).
               </p>
+
+              {topupFeedback && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 text-red-600 text-xs font-bold flex items-center gap-2 border border-red-100">
+                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                   {topupFeedback}
+                </div>
+              )}
               
               <div className="space-y-4 mb-8">
                 <div className="relative">

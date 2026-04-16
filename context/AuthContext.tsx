@@ -11,6 +11,7 @@ interface User {
   role: string;
   balance: number;
   currency: string;
+  defaultCardId: string;
 }
 
 interface AuthContextType {

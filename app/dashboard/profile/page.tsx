@@ -9,12 +9,13 @@ import {
   Smartphone, 
   Globe, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Wallet
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { CURRENCY_SYMBOLS } from "@/utils/currency";
+import { CURRENCY_SYMBOLS, formatBSD } from "@/utils/currency";
 
 interface ProfileItem {
   label: string;
@@ -43,8 +44,6 @@ export default function Profile() {
     }
   };
 
-  // Toute l'appli affiche B$ - la devise est uniquement pour les retraits
-
   const sections: ProfileSection[] = [
     {
       title: "Identité",
@@ -65,7 +64,7 @@ export default function Profile() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-8 lg:p-10 space-y-12">
+    <div className="max-w-7xl mx-auto py-8 lg:p-10 space-y-12">
       <div className="flex flex-col md:flex-row items-center gap-8 bg-white p-10 rounded-[48px] border border-slate-50 shadow-sm relative overflow-hidden group">
         <div className="relative">
            <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-slate-100 flex items-center justify-center p-1.5 border-4 border-slate-50 overflow-hidden group-hover:border-emerald-500 transition-all duration-500">
@@ -73,8 +72,11 @@ export default function Profile() {
                 {user?.fullName ? user.fullName.split(" ").map(n => n[0]).join("") : "??"}
              </div>
            </div>
-           <button className="absolute bottom-2 right-2 w-10 h-10 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-              <LogOut className="w-4 h-4" onClick={() => logout()} />
+           <button 
+             onClick={() => logout()}
+             className="absolute bottom-2 right-2 w-10 h-10 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+           >
+              <LogOut className="w-4 h-4" />
            </button>
         </div>
         
@@ -106,7 +108,7 @@ export default function Profile() {
                                  <select 
                                    value={user?.currency} 
                                    onChange={(e) => handleCurrencyChange(e.target.value)}
-                                   className="text-sm font-bold text-slate-900 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                                   className="text-sm font-bold text-slate-900 bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none"
                                  >
                                    {Object.keys(CURRENCY_SYMBOLS).map(curr => (
                                      <option key={curr} value={curr}>{curr} ({CURRENCY_SYMBOLS[curr]})</option>
@@ -130,10 +132,22 @@ export default function Profile() {
          </div>
 
          <div className="lg:col-span-4 space-y-6">
+            {/* Wallet Balance Widget */}
+            <div className="bg-white rounded-[32px] p-8 border border-slate-50 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 text-slate-400">
+                  <Wallet className="w-4 h-4" />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest">Solde Coffre-Fort</h4>
+              </div>
+              <p className="text-3xl font-black text-slate-900 tracking-tight">{formatBSD(user?.balance || 0)}</p>
+              <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                Fonds disponibles pour alimenter vos cartes ou envoyer à des tiers.
+              </p>
+            </div>
+
             <div className="bg-black rounded-[32px] p-8 text-white relative overflow-hidden group">
                <h4 className="text-sm font-bold mb-4">Besoin d'aide ?</h4>
                <p className="text-xs text-slate-400 leading-relaxed mb-6">Notre support VIP est disponible 24/7 pour nos membres Premium.</p>
-               <button className="w-full bg-white text-black py-3 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all">Contacter Wallora</button>
+               <button className="w-full bg-white text-black py-3 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all relative z-10">Contacter Wallora</button>
                <div className="absolute bottom-[-20%] left-[-10%] w-32 h-32 bg-emerald-500/20 rounded-full blur-[60px]" />
             </div>
 
