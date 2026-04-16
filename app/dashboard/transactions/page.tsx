@@ -9,11 +9,13 @@ import {
   CreditCard,
   Plus,
   Search,
-  ChevronDown
+  ChevronDown,
+  ArrowLeftRight
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { formatBSD } from "@/utils/currency";
 
 export default function Transactions() {
   const { user } = useAuth();
@@ -38,20 +40,26 @@ export default function Transactions() {
   }, []);
 
   const totalFees = transactions.filter(t => t.type === 'FEE' || (t.type === 'TOPUP' && t.fee)).reduce((acc, t) => acc + (t.fee || 0), 0);
-  const netCashflow = transactions.reduce((acc, t) => acc + (t.type === 'TOPUP' ? t.amount : -Math.abs(t.amount)), 0);
+  const netCashflow = transactions.reduce((acc, t) => {
+    const isCredit = ['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(t.type); // Simplifié pour la démo
+    return acc + (isCredit ? t.amount : -Math.abs(t.amount));
+  }, 0);
 
   const stats = [
-    { label: "Net Cashflow", value: `${netCashflow.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Total Fees", value: `-${totalFees.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, color: "text-orange-600", bg: "bg-orange-50" },
-    { label: "Current Balance", value: `${(user?.balance || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, color: "text-slate-900", bg: "bg-black text-white" },
+    { label: "Cashflow Net", value: formatBSD(netCashflow), color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Volume Total", value: formatBSD(transactions.reduce((acc, t) => acc + t.amount, 0)), color: "text-slate-500", bg: "bg-slate-50" },
+    { label: "Solde Actuel", value: formatBSD(user?.balance || 0), color: "text-white", bg: "bg-black" },
   ];
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'TOPUP': return ArrowDownLeft;
-      case 'PAYMENT': return Smartphone;
+      case 'TOPUP': 
+      case 'TRANSFER_IN': return ArrowDownLeft;
+      case 'PAYMENT': 
+      case 'TRANSFER_OUT':
+      case 'CARD_TOPUP': return ArrowUpRight;
       case 'FEE': return CheckCircle2;
-      default: return ArrowUpRight;
+      default: return ArrowLeftRight;
     }
   };
 
@@ -105,22 +113,24 @@ export default function Transactions() {
               </div>
             ) : transactions.map((t) => {
               const Icon = getIcon(t.type);
+              const isCredit = ['TOPUP', 'TRANSFER_IN'].includes(t.type);
+              
               return (
                 <div key={t._id} className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-                      <Icon className="w-5 h-5 text-slate-900" />
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm ${isCredit ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-400"}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">{t.description}</p>
-                      <p className="text-[11px] text-slate-400 font-medium">
+                      <p className="text-[11px] text-slate-400 font-medium tracking-tight">
                         {new Date(t.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} • {t.type}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold text-base ${t.type === 'TOPUP' ? "text-emerald-600" : "text-slate-900"}`}>
-                      {t.type === 'TOPUP' ? `+ ${t.amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €` : `- ${Math.abs(t.amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`}
+                    <p className={`font-bold text-base ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
+                      {isCredit ? `+ ${formatBSD(t.amount)}` : `- ${formatBSD(Math.abs(t.amount))}`}
                     </p>
                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1 bg-emerald-50 px-2 py-0.5 rounded inline-block">Validé</p>
                   </div>

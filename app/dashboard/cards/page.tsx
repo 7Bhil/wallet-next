@@ -21,13 +21,16 @@ import { formatBSD, convertToBSD, CURRENCY_SYMBOLS } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function VirtualCards() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [privacyMode, setPrivacyMode] = useState(true);
   const [freezeAll, setFreezeAll] = useState(false);
   const [cards, setCards] = useState<any[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showSelector, setShowSelector] = useState(false);
+  const [topupCardId, setTopupCardId] = useState<string | null>(null);
+  const [topupAmount, setTopupAmount] = useState("");
+  const [isTopupLoading, setIsTopupLoading] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTxn, setLoadingTxn] = useState(true);
 
@@ -76,6 +79,26 @@ export default function VirtualCards() {
       setDeleteId(null);
     } catch (e) {
       console.error("Error deleting card", e);
+    }
+  };
+
+  const handleTopupCard = async () => {
+    if (!topupCardId || !topupAmount) return;
+    setIsTopupLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`http://localhost:5000/cards/${topupCardId}/topup`, 
+        { amount: parseFloat(topupAmount) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchCards();
+      await refreshUser();
+      setTopupCardId(null);
+      setTopupAmount("");
+    } catch (e) {
+      console.error("Error topping up card", e);
+    } finally {
+      setIsTopupLoading(false);
     }
   };
 
@@ -160,8 +183,16 @@ export default function VirtualCards() {
                   </div>
                   <div className="flex gap-2 items-center">
                     <button 
+                      onClick={(e) => { e.stopPropagation(); setTopupCardId(card._id); }}
+                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
+                      title="Alimenter la carte"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
                       onClick={(e) => { e.stopPropagation(); setDeleteId(card._id); }}
                       className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
+                      title="Supprimer la carte"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -192,11 +223,8 @@ export default function VirtualCards() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-[8px] uppercase opacity-40 font-bold mb-0.5 text-right font-bold">Available</p>
-                      <div className="flex gap-0.5 justify-end">
-                         <span className="w-4 h-4 rounded-full bg-slate-300/20" />
-                         <span className="w-4 h-4 rounded-full bg-slate-300/20 -ml-2" />
-                      </div>
+                      <p className="text-[8px] uppercase opacity-40 font-bold mb-0.5 text-right font-bold">Disponible</p>
+                      <p className="text-sm font-bold text-right">{formatBSD(card.cardBalance || 0)}</p>
                     </div>
                   </div>
                 </div>
@@ -478,6 +506,76 @@ export default function VirtualCards() {
                 ))}
               </div>
               <div className="absolute bottom-[-10%] right-[-5%] w-60 h-60 bg-emerald-500/5 rounded-full blur-[100px]" />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Card Topup Modal */}
+      <AnimatePresence>
+        {topupCardId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setTopupCardId(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-sm bg-white rounded-[32px] p-8 shadow-2xl relative z-10 overflow-hidden"
+            >
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-6">
+                 <ShieldCheck className="w-8 h-8" />
+              </div>
+              <h4 className="text-xl font-black text-slate-900 mb-2">Alimenter la carte</h4>
+              <p className="text-sm text-slate-500 mb-6">
+                Le montant sera déduit de votre solde principal (Solde: {formatBSD(user?.balance || 0)}).
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="relative">
+                   <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-300">B$</div>
+                   <input 
+                    type="number"
+                    value={topupAmount}
+                    onChange={(e) => setTopupAmount(e.target.value)}
+                    placeholder="0.00"
+                    autoFocus
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-12 py-4 text-slate-900 font-bold outline-none transition-all"
+                   />
+                </div>
+                <div className="flex gap-2">
+                  {[10, 50, 100].map(val => (
+                    <button 
+                      key={val}
+                      onClick={() => setTopupAmount(val.toString())}
+                      className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all outline-none"
+                    >
+                      +B${val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setTopupCardId(null)}
+                  className="flex-1 py-4 rounded-2xl bg-slate-50 text-slate-900 font-bold text-sm hover:bg-slate-100 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={handleTopupCard}
+                  disabled={isTopupLoading || !topupAmount || parseFloat(topupAmount) <= 0}
+                  className="flex-1 py-4 rounded-2xl bg-[#065F46] text-white font-bold text-sm hover:bg-[#047857] transition-all shadow-lg shadow-emerald-200 disabled:opacity-50"
+                >
+                  {isTopupLoading ? "En cours…" : "Confirmer"}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
