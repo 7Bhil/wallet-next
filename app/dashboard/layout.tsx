@@ -11,6 +11,7 @@ import {
   Bell, 
   Search,
   User,
+  Send,
   Menu,
   X
 } from "lucide-react";
@@ -26,6 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { name: "Cards", icon: CreditCard, href: "/dashboard/cards" },
     { name: "Top-up", icon: ArrowUpCircle, href: "/dashboard/topup" },
+    { name: "Envoyer", icon: Send, href: "/dashboard/send" },
     { name: "Transactions", icon: History, href: "/dashboard/transactions" },
     { name: "Profile", icon: User, href: "/dashboard/profile" },
   ];
