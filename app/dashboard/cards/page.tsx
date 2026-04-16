@@ -13,7 +13,9 @@ import {
   CreditCard,
   Trash2,
   X,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2,
+  Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -33,6 +35,18 @@ export default function VirtualCards() {
   const [isTopupLoading, setIsTopupLoading] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTxn, setLoadingTxn] = useState(true);
+
+  const handleSetDefault = async (cardId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`http://localhost:5000/cards/${cardId}/default`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await refreshUser();
+    } catch (e) {
+      console.error("Error setting default card", e);
+    }
+  };
 
   React.useEffect(() => {
     fetchCards();
@@ -138,13 +152,14 @@ export default function VirtualCards() {
 
 
   return (
-    <div className="space-y-10">
+    <div className="max-w-7xl mx-auto space-y-10 py-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-black text-slate-900 tracking-tight">Virtual Cards</h1>
           <p className="text-sm text-slate-500 max-w-md">
             Gérez vos actifs numériques avec la sécurité Wallora. Génération instantanée, contrôle total.
           </p>
+          {user?.defaultCardId && <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full w-fit mt-2 border border-emerald-100 italic">Réception automatique activée sur une carte</p>}
         </div>
         <button 
           onClick={() => setShowSelector(true)}
@@ -177,11 +192,22 @@ export default function VirtualCards() {
                 className={`aspect-[1.58/1] rounded-[24px] p-6 shadow-xl relative overflow-hidden flex flex-col justify-between bg-gradient-to-br ${cardColor} ${cardTextColor} ${card.border || ""}`}
               >
                 <div className="relative z-10 flex justify-between items-start">
-                  <div>
-                    <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest mb-0.5">{card.type}</p>
-                    <h3 className="text-lg font-bold">{card.name}</h3>
+                  <div className="space-y-1">
+                    <p className={`text-[10px] font-black uppercase tracking-[0.2em] opacity-60 ${card.type === 'STANDARD' ? 'text-slate-900' : 'text-white'}`}>{card.name}</p>
+                    {user?.defaultCardId === card._id && (
+                      <div className="bg-emerald-500 text-[8px] font-black text-white px-2 py-0.5 rounded-full w-fit tracking-widest flex items-center gap-1 shadow-sm">
+                          <CheckCircle2 className="w-2.5 h-2.5" /> RÉCEPTION PAR DÉFAUT
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2 items-center">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleSetDefault(card._id); }}
+                      className={`p-1.5 rounded-lg transition-colors ${user?.defaultCardId === card._id ? 'bg-emerald-500 text-white' : (card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white')}`}
+                      title={user?.defaultCardId === card._id ? "Carte par défaut" : "Définir par défaut"}
+                    >
+                      <Star className={`w-3.5 h-3.5 ${user?.defaultCardId === card._id ? 'fill-current' : ''}`} />
+                    </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setTopupCardId(card._id); }}
                       className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
