@@ -14,7 +14,7 @@ import Link from "next/link";
 
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { formatAmount } from "@/utils/currency";
+import { formatBSD } from "@/utils/currency";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -61,7 +61,7 @@ export default function Dashboard() {
           <div>
              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Solde Global</p>
               <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
-                {formatAmount(user?.balance || 0, user?.currency)}
+                {formatBSD(user?.balance || 0)}
               </h2>
           </div>
           
@@ -144,7 +144,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right">
                     <p className={`font-bold text-base ${t.type === 'TOPUP' ? "text-emerald-600" : "text-slate-900"}`}>
-                      {t.type === 'TOPUP' ? `+ ${formatAmount(t.amount, user?.currency)}` : `- ${formatAmount(Math.abs(t.amount), user?.currency)}`}
+                      {t.type === 'TOPUP' ? `+ ${formatBSD(t.amount)}` : `- ${formatBSD(Math.abs(t.amount))}`}
                     </p>
                   </div>
                 </motion.div>
@@ -188,7 +188,7 @@ export default function Dashboard() {
                 <CheckCircle2 className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
              </div>
              <button className="w-full bg-[#065F46] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#047857] transition-all">
-                Recharger {formatAmount(500, user?.currency)}
+                Recharger B$ 500
              </button>
           </div>
         </div>

@@ -12,7 +12,7 @@ import {
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { CURRENCY_SYMBOLS, formatAmount } from "@/utils/currency";
+import { CURRENCY_SYMBOLS, convertToBSD, formatBSD } from "@/utils/currency";
 
 export default function TopUp() {
   const { user, refreshUser } = useAuth();
@@ -34,7 +34,8 @@ export default function TopUp() {
 
   const currentFee = fees[method as keyof typeof fees];
   const calculatedFee = (parseFloat(amount) || 0) * currentFee;
-  const finalAmount = (parseFloat(amount) || 0) - calculatedFee;
+  const netLocalAmount = (parseFloat(amount) || 0) - calculatedFee;
+  const bsdAmount = convertToBSD(netLocalAmount, selectedCurrency);
 
   const handleRecharge = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
@@ -52,7 +53,7 @@ export default function TopUp() {
       });
 
       await refreshUser();
-      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} réussie !` });
+      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} → ${formatBSD(bsdAmount)} crédités !` });
       setAmount("");
     } catch (error) {
       console.error("Recharge failed:", error);
@@ -141,13 +142,17 @@ export default function TopUp() {
 
             <div className="bg-slate-50/50 p-6 rounded-3xl space-y-3">
                <div className="flex justify-between text-xs font-medium text-slate-500">
-                  <span>Frais de traitement</span>
-                  <span>{calculatedFee.toFixed(2)} {selectedCurrency}</span>
+                  <span>Frais de traitement ({(currentFee * 100).toFixed(0)}%)</span>
+                  <span>- {calculatedFee.toFixed(2)} {selectedCurrency}</span>
                </div>
+               <div className="h-px bg-slate-100" />
                <div className="flex justify-between text-lg font-bold text-slate-900">
-                  <span>Montant final crédité</span>
-                  <span className="text-emerald-600">{finalAmount.toFixed(2)} {selectedCurrency}</span>
+                  <span>Vous recevrez</span>
+                  <span className="text-emerald-600">{formatBSD(bsdAmount)}</span>
                </div>
+               <p className="text-[10px] text-slate-400 font-medium">
+                 {netLocalAmount.toFixed(2)} {selectedCurrency} converti au taux 1 {selectedCurrency} = {formatBSD(convertToBSD(1, selectedCurrency))}
+               </p>
             </div>
 
             <button 

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { formatAmount } from "@/utils/currency";
+import { formatBSD, convertToBSD, CURRENCY_SYMBOLS } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function VirtualCards() {
@@ -180,8 +180,8 @@ export default function VirtualCards() {
               <div className="bg-white p-4 rounded-[20px] flex justify-between items-center shadow-sm border border-slate-50">
                 <div className="flex gap-8">
                   <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Monthly Spend Limit</p>
-                    <p className="text-sm font-bold text-slate-900">{card.limitValue ? formatAmount(card.limitValue, user?.currency) : card.limit}</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Plafond Mensuel</p>
+                    <p className="text-sm font-bold text-slate-900">{card.limitValue ? formatBSD(card.limitValue) : card.limit}</p>
                   </div>
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Taux d'intérêt</p>
@@ -419,7 +419,7 @@ export default function VirtualCards() {
                     <div className="space-y-3 pt-6 border-t border-slate-50">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
-                        <span className="text-sm font-black text-slate-900">{formatAmount(tier.limitValue, user?.currency)}</span>
+                        <span className="text-sm font-black text-slate-900">{formatBSD(tier.limitValue)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Taux d'intérêt</span>

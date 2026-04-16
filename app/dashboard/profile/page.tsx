@@ -43,6 +43,8 @@ export default function Profile() {
     }
   };
 
+  // Toute l'appli affiche B$ - la devise est uniquement pour les retraits
+
   const sections: ProfileSection[] = [
     {
       title: "Identité",
@@ -50,7 +52,7 @@ export default function Profile() {
         { label: "Nom complet", value: user?.fullName, icon: User },
         { label: "Email", value: user?.email, icon: Mail },
         { label: "Rôle", value: user?.role, icon: Shield },
-        { label: "Devise par défaut", value: user?.currency, icon: Globe, action: "Changer" },
+        { label: "Devise de retrait", value: user?.currency, icon: Globe, action: "Changer" },
       ]
     },
     {
@@ -100,7 +102,7 @@ export default function Profile() {
                             </div>
                             <div>
                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{item.label}</p>
-                               {item.label === "Devise par défaut" ? (
+                               {item.label === "Devise de retrait" ? (
                                  <select 
                                    value={user?.currency} 
                                    onChange={(e) => handleCurrencyChange(e.target.value)}
@@ -115,9 +117,9 @@ export default function Profile() {
                                )}
                             </div>
                          </div>
-                         {item.action && item.label !== "Devise par défaut" ? (
+                         {item.action && item.label !== "Devise de retrait" ? (
                            <button className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline">{item.action}</button>
-                         ) : item.label !== "Devise par défaut" && (
+                         ) : item.label !== "Devise de retrait" && (
                            <ChevronRight className="w-4 h-4 text-slate-200" />
                          )}
                       </div>
