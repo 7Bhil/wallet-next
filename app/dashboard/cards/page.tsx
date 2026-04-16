@@ -1,21 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Plus, 
-  Wifi, 
-  Settings, 
-  Lock, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Wifi,
+  Lock,
+  Eye,
+  EyeOff,
   Smartphone,
-  CheckCircle2,
-  ChevronRight,
-  ShieldCheck,
+  ArrowDownLeft,
+  ArrowUpRight,
   CreditCard,
   Trash2,
   X,
-  ToggleLeft as Toggle
+  ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -30,9 +28,12 @@ export default function VirtualCards() {
   const [isCreating, setIsCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showSelector, setShowSelector] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loadingTxn, setLoadingTxn] = useState(true);
 
   React.useEffect(() => {
     fetchCards();
+    fetchTransactions();
   }, []);
 
   const fetchCards = async () => {
@@ -78,11 +79,39 @@ export default function VirtualCards() {
     }
   };
 
-  // Keep fake activity for now as it will be another step
-  const cardActivity = [
-    { id: 1, name: "Apple Store Online", detail: "VIRTUAL CARD • 2 HOURS AGO", amount: -1299.00, status: "SUCCESS" },
-    { id: 2, name: "The Gilded Fork", detail: "VIRTUAL CARD • YESTERDAY", amount: -245.50, status: "SUCCESS" },
-  ];
+  const fetchTransactions = async () => {
+    setLoadingTxn(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/transactions/my", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTransactions(res.data.slice(0, 5));
+    } catch (e) {
+      console.error("Error fetching transactions", e);
+    } finally {
+      setLoadingTxn(false);
+    }
+  };
+
+  const toggleFreezeAll = async () => {
+    const newFreeze = !freezeAll;
+    setFreezeAll(newFreeze);
+    try {
+      const token = localStorage.getItem("token");
+      await Promise.all(
+        cards.map(card =>
+          axios.patch(`http://localhost:5000/cards/${card._id}/freeze`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        )
+      );
+      await fetchCards();
+    } catch (e) {
+      console.error("Error toggling freeze", e);
+      setFreezeAll(!newFreeze); // rollback
+    }
+  };
 
 
   return (
@@ -211,31 +240,48 @@ export default function VirtualCards() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Recent Card Activity */}
+        {/* Recent Card Activity — données réelles */}
         <div className="lg:col-span-8 space-y-5">
            <div className="flex justify-between items-end">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Recent Card Activity</h3>
-              <button className="text-emerald-700 font-bold text-xs hover:underline">See All</button>
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Activité Récente</h3>
+              <button className="text-emerald-700 font-bold text-xs hover:underline">Voir tout</button>
            </div>
-           
+
            <div className="space-y-3">
-              {cardActivity.map((activity) => (
-                <div key={activity.id} className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-slate-50/50">
-                   <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-900">
-                         <Smartphone className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-bold text-slate-900">{activity.name}</p>
-                        <p className="text-[10px] text-slate-400 font-medium tracking-tight uppercase tracking-wider">{activity.detail}</p>
-                      </div>
-                   </div>
-                   <div className="flex items-center gap-6">
-                      <p className="text-[15px] font-bold text-slate-900">-${activity.amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
-                      <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">{activity.status}</span>
-                   </div>
-                </div>
-              ))}
+             {loadingTxn && (
+               <p className="text-slate-400 text-sm text-center py-8 italic">Chargement…</p>
+             )}
+             {!loadingTxn && transactions.length === 0 && (
+               <div className="bg-white rounded-[24px] border border-dashed border-slate-200 py-10 flex flex-col items-center justify-center text-slate-400">
+                 <ArrowDownLeft className="w-8 h-8 mb-3 opacity-40" />
+                 <p className="text-sm font-bold">Aucune transaction pour l'instant.</p>
+               </div>
+             )}
+             {transactions.map((t) => {
+               const isCredit = t.type === "TOPUP";
+               const Icon = isCredit ? ArrowDownLeft : ArrowUpRight;
+               return (
+                 <div key={t._id} className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-slate-50/50">
+                    <div className="flex items-center gap-4">
+                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isCredit ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"}`}>
+                          <Icon className="w-5 h-5" />
+                       </div>
+                       <div>
+                         <p className="text-[13px] font-bold text-slate-900">{t.description}</p>
+                         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                           {new Date(t.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} • {t.type}
+                         </p>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                       <p className={`text-[15px] font-bold ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
+                         {isCredit ? "+" : "-"}{formatBSD(Math.abs(t.amount))}
+                       </p>
+                       <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">{t.status}</span>
+                    </div>
+                 </div>
+               );
+             })}
            </div>
         </div>
 
@@ -249,13 +295,14 @@ export default function VirtualCards() {
                       <Lock className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-900">Freeze All Cards</p>
-                      <p className="text-[10px] text-slate-400">Instantly disable spending</p>
+                      <p className="text-sm font-bold text-slate-900">Geler toutes les cartes</p>
+                      <p className="text-[10px] text-slate-400">{cards.length} carte(s) • Désactive les dépenses</p>
                     </div>
                  </div>
-                 <button 
-                  onClick={() => setFreezeAll(!freezeAll)}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors ${freezeAll ? "bg-emerald-600" : "bg-slate-200"}`}
+                 <button
+                  onClick={toggleFreezeAll}
+                  disabled={cards.length === 0}
+                  className={`w-10 h-6 rounded-full p-1 transition-colors disabled:opacity-40 ${freezeAll ? "bg-emerald-600" : "bg-slate-200"}`}
                  >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${freezeAll ? "translate-x-4" : "translate-x-0"}`} />
                  </button>
@@ -267,8 +314,8 @@ export default function VirtualCards() {
                       <EyeOff className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-900">Privacy Mode</p>
-                      <p className="text-[10px] text-slate-400">Hide numbers on display</p>
+                      <p className="text-sm font-bold text-slate-900">Mode Confidentialité</p>
+                      <p className="text-[10px] text-slate-400">Masquer les numéros de carte</p>
                     </div>
                  </div>
                  <button 
@@ -280,18 +327,19 @@ export default function VirtualCards() {
               </div>
 
               {/* Security Banner */}
-              <div className="bg-black rounded-[24px] p-8 text-white relative overflow-hidden group cursor-pointer">
+              <div className="bg-black rounded-[24px] p-8 text-white relative overflow-hidden">
                  <div className="relative z-10 space-y-4">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Next-Gen Protection</p>
-                    <h4 className="text-lg font-bold leading-tight">Enable Biometric<br />Approvals</h4>
-                    <button className="bg-white text-black px-5 py-2.5 rounded-xl text-[11px] font-black hover:bg-slate-100 transition-colors uppercase tracking-tight">
-                       Configure Now
-                    </button>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallora Shield</p>
+                    <h4 className="text-lg font-bold leading-tight">Vos transactions<br />sont chiffrées 256-bit</h4>
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" />
+                      <p className="text-[10px] font-bold uppercase tracking-widest">Sécurité maximale</p>
+                    </div>
                  </div>
-                 <div className="absolute right-[-10px] bottom-[-20px] opacity-20 group-hover:scale-110 transition-transform">
-                    <div className="w-24 h-24 border-[10px] border-white rounded-3xl" />
+                 <div className="absolute right-[-10px] bottom-[-20px] opacity-10">
+                    <div className="w-28 h-28 border-[12px] border-white rounded-3xl" />
                  </div>
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
               </div>
            </div>
         </div>
