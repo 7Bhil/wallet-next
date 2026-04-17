@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X, CheckCircle2 } from "lucide-react";
+import { updateRates } from "@/utils/currency";
 
 interface User {
   id: string;
@@ -54,6 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       setUser(response.data);
       initSocket(token);
+
+      // Fetch real-time currency rates
+      try {
+        const ratesRes = await axios.get("http://localhost:5000/currency/rates");
+        updateRates(ratesRes.data.toBSD, ratesRes.data.fromBSD);
+      } catch (e) {
+        console.warn("Could not fetch real-time rates", e);
+      }
     } catch (error: any) {
       console.error("Failed to fetch user:", error);
       localStorage.removeItem("token");

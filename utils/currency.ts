@@ -1,19 +1,24 @@
 // Taux de conversion VERS B$ (1 devise locale = X B$)
 // Basé sur : 1 B$ = 1 USD
-export const TO_BSD_RATES: { [key: string]: number } = {
+export let TO_BSD_RATES: { [key: string]: number } = {
   USD: 1,
-  EUR: 1 / 0.92,   // 1 EUR = ~1.087 B$
-  XOF: 1 / 610,    // 1 XOF = ~0.00164 B$
-  GBP: 1 / 0.79,   // 1 GBP = ~1.266 B$
+  EUR: 1.08,
+  XOF: 0.0016,
+  GBP: 1.27,
 };
 
 // Taux de conversion DEPUIS B$ vers devise locale (pour les retraits)
-export const FROM_BSD_RATES: { [key: string]: number } = {
+export let FROM_BSD_RATES: { [key: string]: number } = {
   USD: 1,
   EUR: 0.92,
   XOF: 610,
   GBP: 0.79,
 };
+
+export function updateRates(toBSD: any, fromBSD: any) {
+  TO_BSD_RATES = { ...TO_BSD_RATES, ...toBSD };
+  FROM_BSD_RATES = { ...FROM_BSD_RATES, ...fromBSD };
+}
 
 export const CURRENCY_SYMBOLS: { [key: string]: string } = {
   USD: "$",
