@@ -11,7 +11,8 @@ import {
   ChevronRight,
   RefreshCw,
   Zap,
-  DollarSign
+  DollarSign,
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -59,155 +60,193 @@ export default function AdminFinances() {
   const platformProfit = totalMarketValue - userReceives;
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-10 pb-20">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-             <TrendingUp className="w-6 h-6 text-white" />
+    <div className="max-w-[1400px] mx-auto space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
+             <Zap className="w-3 h-3 text-indigo-600 fill-indigo-600" />
+             <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Financial Intelligence v2.0</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Analyse de Rentabilité</h1>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
+            Analyse de <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Rentabilité</span>
+          </h1>
+          <p className="text-sm font-medium text-slate-400 max-w-xl">
+            Surveillez et simulez vos marges de change en temps réel. Optimisez vos profits grâce à notre moteur de calcul prédictif.
+          </p>
         </div>
-        <p className="text-sm font-medium text-slate-400 pl-15">Simulateur de revenus et surveillance des marges de change.</p>
+        
+        <button onClick={fetchRates} className="group flex items-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl transition-all font-bold text-xs text-slate-600 hover:text-slate-900">
+           <RefreshCw className={`w-4 h-4 transition-transform duration-700 group-hover:rotate-180 ${loading ? 'animate-spin' : ''}`} />
+           Actualiser les Marchés
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Left: Interactive Simulator */}
-        <div className="lg:col-span-12 xl:col-span-7 space-y-8">
-           <div className="bg-white rounded-[44px] p-8 md:p-12 shadow-2xl shadow-slate-200 border border-slate-50 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50" />
-              
-              <div className="relative space-y-10">
+        {/* Left: The Mega-Simulator (Dark Theme) */}
+        <div className="lg:col-span-8">
+           <div className="bg-[#0F172A] rounded-[48px] p-1 shadow-2xl shadow-indigo-500/20 overflow-hidden relative">
+              {/* Background Glows */}
+              <div className="absolute top-0 left-1/4 w-64 h-64 bg-indigo-500/20 blur-[100px] rounded-full" />
+              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full" />
+
+              <div className="relative bg-slate-900/40 backdrop-blur-3xl rounded-[46px] p-8 md:p-14 border border-white/5 space-y-12">
                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                       <Calculator className="w-5 h-5 text-indigo-600" />
-                       <h3 className="text-xl font-black text-slate-900">Simulateur de Profit</h3>
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
+                          <Calculator className="w-6 h-6 text-indigo-400" />
+                       </div>
+                       <div>
+                          <h3 className="text-xl font-black text-white tracking-tight">Financial Simulator</h3>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Calculateur de Spread en temps réel</p>
+                       </div>
                     </div>
-                    <div className="px-4 py-1.5 bg-indigo-50 rounded-xl text-[10px] font-black text-indigo-600 uppercase tracking-widest">
-                       Spread Actuel: {(commission * 100).toFixed(1)}%
+                    <div className="flex flex-col items-end gap-1">
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Marge Actuelle</span>
+                       <span className="text-2xl font-black text-indigo-400">{(commission * 100).toFixed(1)}%</span>
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-3">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Montant à simuler</label>
-                       <div className="relative group">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Montant Entrant</label>
+                       <div className="relative">
                           <input 
                             type="number" 
                             value={simAmount}
                             onChange={(e) => setSimAmount(Number(e.target.value))}
-                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-[28px] py-6 px-8 text-2xl font-black text-slate-900 focus:border-indigo-600 outline-none transition-all"
+                            className="w-full bg-white/5 border-2 border-white/5 rounded-3xl py-8 px-10 text-4xl font-black text-white focus:border-indigo-500/50 focus:bg-white/[0.07] outline-none transition-all placeholder:text-white/10"
                           />
-                          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">Unité</div>
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-indigo-500 rounded-full" />
                        </div>
+                       <p className="text-[10px] font-bold text-slate-600 ml-4 italic">*Entrez la valeur en devise locale pour simuler la conversion.</p>
                     </div>
-                    <div className="space-y-3">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Devise locale</label>
-                       <select 
-                        value={simCurrency}
-                        onChange={(e) => setSimCurrency(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-[28px] py-6 px-8 text-xl font-black text-slate-900 appearance-none focus:border-indigo-600 outline-none transition-all cursor-pointer"
-                       >
-                          {ratesData?.toBSD && Object.keys(ratesData.toBSD).map(c => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                       </select>
+
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Devise Sélectionnée</label>
+                       <div className="relative">
+                          <select 
+                            value={simCurrency}
+                            onChange={(e) => setSimCurrency(e.target.value)}
+                            className="w-full bg-white/5 border-2 border-white/5 rounded-3xl py-8 px-10 text-2xl font-black text-white focus:border-indigo-500/50 focus:bg-white/[0.07] outline-none transition-all appearance-none cursor-pointer"
+                          >
+                             {ratesData?.toBSD && Object.keys(ratesData.toBSD).map(c => (
+                               <option key={c} value={c} className="bg-slate-900 text-white">{c} - {c === 'EUR' ? 'Euro' : c === 'XOF' ? 'Franc CFA' : c === 'GBP' ? 'Livre' : 'Devise'}</option>
+                             ))}
+                          </select>
+                          <ChevronRight className="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600 rotate-90" />
+                       </div>
                     </div>
                  </div>
 
-                 {/* Results Visualization */}
-                 <div className="bg-slate-900 rounded-[36px] p-8 md:p-12 space-y-10 text-white shadow-2xl shadow-indigo-500/20">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                       <div className="text-center md:text-left space-y-1">
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Valeur Marché Réelle</p>
-                          <h4 className="text-2xl font-black">B$ {totalMarketValue.toFixed(4)}</h4>
+                 {/* Results Visualization (The "Wow" Part) */}
+                 <div className="space-y-8 pt-6">
+                    <div className="flex flex-col md:flex-row items-center gap-12">
+                       <div className="flex-1 space-y-2 text-center md:text-left">
+                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center md:justify-start gap-2">
+                             <TrendingUp className="w-3 h-3" /> Valeur Réelle du Marché
+                          </p>
+                          <h4 className="text-4xl font-black text-white tracking-tighter">B$ {totalMarketValue.toFixed(4)}</h4>
                        </div>
-                       <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center rotate-90 md:rotate-0">
-                          <ArrowRight className="w-5 h-5 text-indigo-400" />
-                       </div>
-                       <div className="text-center md:text-right space-y-1">
-                          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Attribué à l'Utilisateur</p>
-                          <h4 className="text-2xl font-black text-emerald-400">B$ {userReceives.toFixed(4)}</h4>
+                       <div className="w-px h-16 bg-white/10 hidden md:block" />
+                       <div className="flex-1 space-y-2 text-center md:text-right">
+                          <p className="text-[11px] font-black text-indigo-400 uppercase tracking-widest flex items-center justify-center md:justify-end gap-2">
+                             Attribué Utilisateur <CheckCircle2 className="w-3 h-3" />
+                          </p>
+                          <h4 className="text-4xl font-black text-indigo-400 tracking-tighter">B$ {userReceives.toFixed(4)}</h4>
                        </div>
                     </div>
 
-                    <div className="h-px bg-white/10 w-full" />
+                    {/* Visual Distribution Bar */}
+                    <div className="space-y-4">
+                        <div className="h-6 w-full bg-white/5 rounded-full overflow-hidden flex p-1 border border-white/5">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(userReceives / totalMarketValue) * 100}%` }}
+                              transition={{ duration: 1, ease: "circOut" }}
+                              className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full" 
+                            />
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(platformProfit / totalMarketValue) * 100}%` }}
+                              transition={{ duration: 1, ease: "circOut", delay: 0.2 }}
+                              className="h-full bg-emerald-500/40 ml-1 rounded-full" 
+                            />
+                        </div>
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                           <span className="text-indigo-400">User Share ({( (userReceives / totalMarketValue) * 100 ).toFixed(1)}%)</span>
+                           <span className="text-emerald-400">Platform Yield ({( (platformProfit / totalMarketValue) * 100 ).toFixed(1)}%)</span>
+                        </div>
+                    </div>
 
-                    <div className="flex items-center justify-between bg-white/5 rounded-3xl p-6 border border-white/5">
-                       <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/40">
-                             <Coins className="w-6 h-6 text-white" />
+                    {/* Final Profit Card */}
+                    <motion.div 
+                      key={platformProfit}
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-[32px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-indigo-600/30"
+                    >
+                       <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30">
+                             <Coins className="w-8 h-8" />
                           </div>
-                          <div>
-                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Profit Net Wallet</p>
-                             <h3 className="text-3xl font-black text-white">+{platformProfit.toFixed(4)} B$</h3>
+                          <div className="text-center md:text-left">
+                             <p className="text-[11px] font-black text-indigo-100 uppercase tracking-[0.2em]">Net Capital Gain</p>
+                             <h3 className="text-5xl font-black text-white tracking-tighter">+{platformProfit.toFixed(4)} <span className="text-2xl opacity-50">B$</span></h3>
                           </div>
                        </div>
-                       <Zap className="w-8 h-8 text-indigo-500 fill-indigo-500 opacity-20 hidden sm:block" />
-                    </div>
+                       <button className="px-8 py-4 bg-white rounded-2xl text-indigo-600 font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">
+                          Optimiser le Spread
+                       </button>
+                    </motion.div>
                  </div>
-              </div>
-           </div>
-
-           {/* Infographic/Explanation */}
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-4">
-                 <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                    <Info className="w-5 h-5 text-orange-600" />
-                 </div>
-                 <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Comment optimiser ?</h4>
-                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                    Plus le volume de transactions est élevé, plus le profit cumulé devient significatif. Augmenter le spread à **3%** doublerait le profit, mais pourrait réduire la satisfaction utilisateur.
-                 </p>
-              </div>
-              <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-4">
-                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-indigo-600" />
-                 </div>
-                 <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Objectif Financier</h4>
-                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                    En atteignant **10 000 B$** de volume quotidien, ce spread de 2% seul génère environ **200 B$** de profit passif par jour.
-                 </p>
               </div>
            </div>
         </div>
 
-        {/* Right: All Currencies ROI Table */}
-        <div className="lg:col-span-12 xl:col-span-5">
-           <div className="bg-white rounded-[44px] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden h-full">
-              <div className="p-8 border-b border-slate-50">
-                 <h3 className="text-lg font-black text-slate-900">Analyse par Devise</h3>
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Rentabilité par unité (B$)</p>
+        {/* Right: Modern Market Table */}
+        <div className="lg:col-span-4 space-y-8">
+           <div className="bg-white rounded-[48px] shadow-xl shadow-slate-200/60 border border-slate-50 overflow-hidden">
+              <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                 <div>
+                    <h3 className="text-lg font-black text-slate-900 tracking-tight">Market Analysis</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global conversion ROI</p>
+                 </div>
+                 <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <TrendingUp className="w-4 h-4 text-indigo-600" />
+                 </div>
               </div>
-              <div className="divide-y divide-slate-50 overflow-y-auto max-h-[700px]">
-                 {ratesData?.toBSD && Object.entries(ratesData.toBSD).sort((a: any, b: any) => b[1] - a[1]).map(([currency, pRate]: [string, any]) => {
+              <div className="divide-y divide-slate-50 overflow-y-auto max-h-[640px] custom-scrollbar">
+                 {ratesData?.toBSD && Object.entries(ratesData.toBSD).filter(([c]) => ['EUR', 'GBP', 'USD', 'XOF', 'JPY', 'CAD'].includes(c)).sort((a: any, b: any) => b[1] - a[1]).map(([currency, pRate]: [string, any]) => {
                    const mRate = pRate / (1 - commission);
-                   const isPromoted = ['EUR', 'GBP', 'USD', 'XOF'].includes(currency);
+                   const prof = mRate - pRate;
                    
                    return (
-                    <div key={currency} className={`p-6 flex items-center justify-between group hover:bg-slate-50 transition-all ${isPromoted ? 'bg-indigo-50/20' : ''}`}>
+                    <div key={currency} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-all cursor-default group">
                        <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${isPromoted ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                             {currency.slice(0, 1)}
+                          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-900 font-black text-xs group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all duration-300">
+                             {currency}
                           </div>
                           <div>
-                             <p className="text-sm font-black text-slate-900">{currency}</p>
-                             <p className="text-[10px] font-bold text-slate-400 uppercase">ROI: +{(commission * 100).toFixed(0)}%</p>
+                             <p className="text-sm font-black text-slate-900">{currency} / B$</p>
+                             <p className="text-[9px] font-bold text-emerald-500 uppercase">Rentable</p>
                           </div>
                        </div>
                        <div className="text-right">
-                          <p className="text-sm font-black text-indigo-600">+{(mRate - pRate).toFixed(currency === 'XOF' ? 6 : 4)}</p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Profit / Unité</p>
+                          <p className="text-sm font-black text-slate-900">+{prof.toFixed(currency === 'XOF' ? 6 : 4)}</p>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Profit Direct</p>
                        </div>
                     </div>
                    );
                  })}
               </div>
-              <div className="p-6 bg-slate-50 flex items-center justify-center">
-                 <button onClick={fetchRates} className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">
-                    <RefreshCw className="w-3 h-3" />
-                    Rafraichir les taux
-                 </button>
+              <div className="p-8 bg-slate-50/80 border-t border-slate-100">
+                 <div className="bg-indigo-600 rounded-3xl p-6 text-white space-y-4 shadow-lg shadow-indigo-200">
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-80 underline underline-offset-4">Insight du jour</p>
+                    <p className="text-xs font-bold leading-relaxed">
+                       "Le volume transactionnel en EUR a augmenté de 12%. Envisagez de réduire le spread à 1.8% pour attirer plus de baleines."
+                    </p>
+                 </div>
               </div>
            </div>
         </div>
