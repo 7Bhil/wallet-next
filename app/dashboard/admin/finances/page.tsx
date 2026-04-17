@@ -60,191 +60,164 @@ export default function AdminFinances() {
   const platformProfit = totalMarketValue - userReceives;
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Premium Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
-             <Zap className="w-3 h-3 text-indigo-600 fill-indigo-600" />
-             <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Financial Intelligence v2.0</span>
-          </div>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-            Analyse de <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Rentabilité</span>
-          </h1>
-          <p className="text-sm font-medium text-slate-400 max-w-xl">
-            Surveillez et simulez vos marges de change en temps réel. Optimisez vos profits grâce à notre moteur de calcul prédictif.
-          </p>
+    <div className="max-w-[1300px] mx-auto space-y-12 pb-20 animate-in fade-in duration-500">
+      {/* Sober Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-10">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Analyse de Rentabilité</h1>
+          <p className="text-sm font-medium text-slate-400">Simulation des marges opérationnelles et des profits de change.</p>
         </div>
-        
-        <button onClick={fetchRates} className="group flex items-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl transition-all font-bold text-xs text-slate-600 hover:text-slate-900">
-           <RefreshCw className={`w-4 h-4 transition-transform duration-700 group-hover:rotate-180 ${loading ? 'animate-spin' : ''}`} />
-           Actualiser les Marchés
+        <button 
+          onClick={fetchRates} 
+          className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-sm"
+        >
+           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+           Actualiser les taux
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Left: The Mega-Simulator (Dark Theme) */}
-        <div className="lg:col-span-8">
-           <div className="bg-[#0F172A] rounded-[48px] p-1 shadow-2xl shadow-indigo-500/20 overflow-hidden relative">
-              {/* Background Glows */}
-              <div className="absolute top-0 left-1/4 w-64 h-64 bg-indigo-500/20 blur-[100px] rounded-full" />
-              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full" />
+        {/* Left: Minimalist Simulator */}
+        <div className="lg:col-span-8 space-y-8">
+           <div className="bg-white rounded-[32px] border border-slate-100 p-8 md:p-12 shadow-sm">
+              <div className="flex items-center justify-between mb-12">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center">
+                       <Calculator className="w-5 h-5 text-slate-900" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">Simulateur de Profit</h3>
+                 </div>
+                 <span className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                    Commission Actuelle: {(commission * 100).toFixed(1)}%
+                 </span>
+              </div>
 
-              <div className="relative bg-slate-900/40 backdrop-blur-3xl rounded-[46px] p-8 md:p-14 border border-white/5 space-y-12">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
-                          <Calculator className="w-6 h-6 text-indigo-400" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant Entrant</label>
+                    <div className="relative">
+                       <input 
+                         type="number" 
+                         value={simAmount}
+                         onChange={(e) => setSimAmount(Number(e.target.value))}
+                         className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-5 px-8 text-2xl font-black text-slate-900 focus:border-slate-300 outline-none transition-all placeholder:text-slate-300"
+                        />
+                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-slate-900 rounded-r-full" />
+                    </div>
+                 </div>
+
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Devise Locale</label>
+                    <select 
+                      value={simCurrency}
+                      onChange={(e) => setSimCurrency(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-5 px-8 text-lg font-bold text-slate-900 focus:border-slate-300 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                       {ratesData?.toBSD && Object.keys(ratesData.toBSD).map(c => (
+                         <option key={c} value={c}>{c}</option>
+                       ))}
+                    </select>
+                 </div>
+              </div>
+
+              {/* Data Breakdown */}
+              <div className="mt-12 space-y-8 pt-10 border-t border-slate-50">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-1">
+                       <p className="text-[10px] font-bold text-slate-400 uppercase">Valeur Réelle (Marché)</p>
+                       <p className="text-2xl font-black text-slate-900">B$ {totalMarketValue.toFixed(4)}</p>
+                    </div>
+                    <div className="p-6 rounded-2xl bg-indigo-50/30 border border-indigo-100/50 space-y-1">
+                       <p className="text-[10px] font-bold text-indigo-400 uppercase">Attribué Utilisateur</p>
+                       <p className="text-2xl font-black text-indigo-600">B$ {userReceives.toFixed(4)}</p>
+                    </div>
+                 </div>
+
+                 <div className="space-y-3">
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                       <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(userReceives / totalMarketValue) * 100}%` }}
+                        className="h-full bg-slate-900" 
+                       />
+                       <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(platformProfit / totalMarketValue) * 100}%` }}
+                        className="h-full bg-indigo-500" 
+                       />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tighter">
+                       <span className="text-slate-400">Utilisateur ({( (userReceives / totalMarketValue) * 100 ).toFixed(1)}%)</span>
+                       <span className="text-indigo-500">Wallet Yield ({( (platformProfit / totalMarketValue) * 100 ).toFixed(1)}%)</span>
+                    </div>
+                 </div>
+
+                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-900 rounded-3xl p-8 text-white">
+                    <div className="flex items-center gap-5">
+                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                          <Coins className="w-6 h-6 text-white" />
                        </div>
                        <div>
-                          <h3 className="text-xl font-black text-white tracking-tight">Financial Simulator</h3>
-                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Calculateur de Spread en temps réel</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Profit Net Platform</p>
+                          <h3 className="text-4xl font-black text-white">+{platformProfit.toFixed(4)} B$</h3>
                        </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Marge Actuelle</span>
-                       <span className="text-2xl font-black text-indigo-400">{(commission * 100).toFixed(1)}%</span>
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Montant Entrant</label>
-                       <div className="relative">
-                          <input 
-                            type="number" 
-                            value={simAmount}
-                            onChange={(e) => setSimAmount(Number(e.target.value))}
-                            className="w-full bg-white/5 border-2 border-white/5 rounded-3xl py-8 px-10 text-4xl font-black text-white focus:border-indigo-500/50 focus:bg-white/[0.07] outline-none transition-all placeholder:text-white/10"
-                          />
-                          <div className="absolute left-4 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-indigo-500 rounded-full" />
-                       </div>
-                       <p className="text-[10px] font-bold text-slate-600 ml-4 italic">*Entrez la valeur en devise locale pour simuler la conversion.</p>
-                    </div>
-
-                    <div className="space-y-4">
-                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Devise Sélectionnée</label>
-                       <div className="relative">
-                          <select 
-                            value={simCurrency}
-                            onChange={(e) => setSimCurrency(e.target.value)}
-                            className="w-full bg-white/5 border-2 border-white/5 rounded-3xl py-8 px-10 text-2xl font-black text-white focus:border-indigo-500/50 focus:bg-white/[0.07] outline-none transition-all appearance-none cursor-pointer"
-                          >
-                             {ratesData?.toBSD && Object.keys(ratesData.toBSD).map(c => (
-                               <option key={c} value={c} className="bg-slate-900 text-white">{c} - {c === 'EUR' ? 'Euro' : c === 'XOF' ? 'Franc CFA' : c === 'GBP' ? 'Livre' : 'Devise'}</option>
-                             ))}
-                          </select>
-                          <ChevronRight className="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600 rotate-90" />
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* Results Visualization (The "Wow" Part) */}
-                 <div className="space-y-8 pt-6">
-                    <div className="flex flex-col md:flex-row items-center gap-12">
-                       <div className="flex-1 space-y-2 text-center md:text-left">
-                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center md:justify-start gap-2">
-                             <TrendingUp className="w-3 h-3" /> Valeur Réelle du Marché
-                          </p>
-                          <h4 className="text-4xl font-black text-white tracking-tighter">B$ {totalMarketValue.toFixed(4)}</h4>
-                       </div>
-                       <div className="w-px h-16 bg-white/10 hidden md:block" />
-                       <div className="flex-1 space-y-2 text-center md:text-right">
-                          <p className="text-[11px] font-black text-indigo-400 uppercase tracking-widest flex items-center justify-center md:justify-end gap-2">
-                             Attribué Utilisateur <CheckCircle2 className="w-3 h-3" />
-                          </p>
-                          <h4 className="text-4xl font-black text-indigo-400 tracking-tighter">B$ {userReceives.toFixed(4)}</h4>
-                       </div>
-                    </div>
-
-                    {/* Visual Distribution Bar */}
-                    <div className="space-y-4">
-                        <div className="h-6 w-full bg-white/5 rounded-full overflow-hidden flex p-1 border border-white/5">
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${(userReceives / totalMarketValue) * 100}%` }}
-                              transition={{ duration: 1, ease: "circOut" }}
-                              className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full" 
-                            />
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${(platformProfit / totalMarketValue) * 100}%` }}
-                              transition={{ duration: 1, ease: "circOut", delay: 0.2 }}
-                              className="h-full bg-emerald-500/40 ml-1 rounded-full" 
-                            />
-                        </div>
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                           <span className="text-indigo-400">User Share ({( (userReceives / totalMarketValue) * 100 ).toFixed(1)}%)</span>
-                           <span className="text-emerald-400">Platform Yield ({( (platformProfit / totalMarketValue) * 100 ).toFixed(1)}%)</span>
-                        </div>
-                    </div>
-
-                    {/* Final Profit Card */}
-                    <motion.div 
-                      key={platformProfit}
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-[32px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-indigo-600/30"
-                    >
-                       <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30">
-                             <Coins className="w-8 h-8" />
-                          </div>
-                          <div className="text-center md:text-left">
-                             <p className="text-[11px] font-black text-indigo-100 uppercase tracking-[0.2em]">Net Capital Gain</p>
-                             <h3 className="text-5xl font-black text-white tracking-tighter">+{platformProfit.toFixed(4)} <span className="text-2xl opacity-50">B$</span></h3>
-                          </div>
-                       </div>
-                       <button className="px-8 py-4 bg-white rounded-2xl text-indigo-600 font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">
-                          Optimiser le Spread
-                       </button>
-                    </motion.div>
+                    <button className="px-6 py-3 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-100 transition-colors">
+                       Consulter l'Audit
+                    </button>
                  </div>
               </div>
            </div>
+
+           {/* Simple Cards */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { label: "Projection Hebdomadaire", val: "+1,400 B$", desc: "Basé sur le volume actuel", icon: TrendingUp },
+                { label: "Objectif du mois", val: "5,000 B$", desc: "45% complété", icon: Target },
+              ].map((item, i) => (
+                <div key={i} className="bg-white p-8 rounded-[28px] border border-slate-100 shadow-sm flex items-start justify-between">
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">{item.label}</p>
+                      <p className="text-2xl font-black text-slate-900">{item.val}</p>
+                      <p className="text-xs text-slate-400">{item.desc}</p>
+                   </div>
+                   <item.icon className="w-5 h-5 text-slate-300" />
+                </div>
+              ))}
+           </div>
         </div>
 
-        {/* Right: Modern Market Table */}
-        <div className="lg:col-span-4 space-y-8">
-           <div className="bg-white rounded-[48px] shadow-xl shadow-slate-200/60 border border-slate-50 overflow-hidden">
-              <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                 <div>
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight">Market Analysis</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global conversion ROI</p>
-                 </div>
-                 <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
-                    <TrendingUp className="w-4 h-4 text-indigo-600" />
-                 </div>
+        {/* Right: Clean Table */}
+        <div className="lg:col-span-4">
+           <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
+              <div className="p-8 border-b border-slate-100">
+                 <h3 className="text-lg font-bold text-slate-900">Index des Devises</h3>
+                 <p className="text-[11px] font-medium text-slate-400 mt-1">Marges de profit par unité.</p>
               </div>
-              <div className="divide-y divide-slate-50 overflow-y-auto max-h-[640px] custom-scrollbar">
-                 {ratesData?.toBSD && Object.entries(ratesData.toBSD).filter(([c]) => ['EUR', 'GBP', 'USD', 'XOF', 'JPY', 'CAD'].includes(c)).sort((a: any, b: any) => b[1] - a[1]).map(([currency, pRate]: [string, any]) => {
+              <div className="flex-1 divide-y divide-slate-50 overflow-y-auto custom-scrollbar">
+                 {ratesData?.toBSD && Object.entries(ratesData.toBSD).filter(([c]) => ['EUR', 'GBP', 'USD', 'XOF', 'JPY', 'CAD'].includes(c)).map(([currency, pRate]: [string, any]) => {
                    const mRate = pRate / (1 - commission);
-                   const prof = mRate - pRate;
-                   
                    return (
-                    <div key={currency} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-all cursor-default group">
+                    <div key={currency} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-900 font-black text-xs group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all duration-300">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold text-xs text-slate-900">
                              {currency}
                           </div>
-                          <div>
-                             <p className="text-sm font-black text-slate-900">{currency} / B$</p>
-                             <p className="text-[9px] font-bold text-emerald-500 uppercase">Rentable</p>
-                          </div>
+                          <span className="text-sm font-bold text-slate-700">{currency} / B$</span>
                        </div>
                        <div className="text-right">
-                          <p className="text-sm font-black text-slate-900">+{prof.toFixed(currency === 'XOF' ? 6 : 4)}</p>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Profit Direct</p>
+                          <p className="text-sm font-bold text-slate-900">+{ (mRate - pRate).toFixed(currency === 'XOF' ? 6 : 4) }</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Profit / Unité</p>
                        </div>
                     </div>
                    );
                  })}
               </div>
-              <div className="p-8 bg-slate-50/80 border-t border-slate-100">
-                 <div className="bg-indigo-600 rounded-3xl p-6 text-white space-y-4 shadow-lg shadow-indigo-200">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-80 underline underline-offset-4">Insight du jour</p>
-                    <p className="text-xs font-bold leading-relaxed">
-                       "Le volume transactionnel en EUR a augmenté de 12%. Envisagez de réduire le spread à 1.8% pour attirer plus de baleines."
+              <div className="p-10 bg-slate-50/50">
+                 <div className="p-6 bg-white rounded-2xl border border-slate-100 space-y-3">
+                    <p className="text-[10px] font-bold text-slate-900 uppercase">Conseil Financier</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                       Maintenir un spread constant de 2% assure une rentabilité stable sans décourager les gros transferts.
                     </p>
                  </div>
               </div>
