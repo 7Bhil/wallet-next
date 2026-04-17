@@ -84,7 +84,7 @@ export default function Profile() {
            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{user?.fullName}</h1>
            <p className="text-sm font-bold text-emerald-600 uppercase tracking-[0.2em]">{user?.role} PRO</p>
            <p className="text-xs text-slate-400 font-medium max-w-sm">
-             Gérez vos informations personnelles et configurez la sécurité de votre compte Wallora.
+             Gérez vos informations personnelles et configurez la sécurité de votre compte Wallet.
            </p>
         </div>
         <div className="absolute top-[-20%] right-[-10%] w-60 h-60 bg-emerald-500/5 rounded-full blur-[100px]" />
@@ -147,7 +147,7 @@ export default function Profile() {
             <div className="bg-black rounded-[32px] p-8 text-white relative overflow-hidden group">
                <h4 className="text-sm font-bold mb-4">Besoin d'aide ?</h4>
                <p className="text-xs text-slate-400 leading-relaxed mb-6">Notre support VIP est disponible 24/7 pour nos membres Premium.</p>
-               <button className="w-full bg-white text-black py-3 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all relative z-10">Contacter Wallora</button>
+               <button className="w-full bg-white text-black py-3 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all relative z-10">Contacter Wallet</button>
                <div className="absolute bottom-[-20%] left-[-10%] w-32 h-32 bg-emerald-500/20 rounded-full blur-[60px]" />
             </div>
 

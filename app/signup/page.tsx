@@ -71,7 +71,7 @@ export default function Signup() {
           <div className="relative z-10 mt-16 group">
             <div className="w-full max-w-[380px] aspect-[1.58/1] bg-gradient-to-br from-[#1E293B] to-[#010614] p-8 rounded-[28px] border border-white/10 shadow-2xl flex flex-col justify-between relative overflow-hidden">
               <div className="flex justify-between items-start">
-                <span className="text-[10px] tracking-[0.25em] text-slate-500 font-bold uppercase">Wallora Platinum</span>
+                <span className="text-[10px] tracking-[0.25em] text-slate-500 font-bold uppercase">Wallet Platinum</span>
                 <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center">
                   <div className="w-5 h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
                 </div>
@@ -80,7 +80,7 @@ export default function Signup() {
               <div className="mt-auto">
                  <div className="text-[18px] tracking-[0.25em] font-mono text-slate-300">•••• •••• •••• 1234</div>
                  <div className="flex justify-between items-end mt-4">
-                    <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">Wallora Member</p>
+                    <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">Wallet Member</p>
                     <div className="flex -space-x-3">
                        <div className="w-8 h-8 rounded-full bg-red-500/80 backdrop-blur-sm" />
                        <div className="w-8 h-8 rounded-full bg-orange-500/80 backdrop-blur-sm" />

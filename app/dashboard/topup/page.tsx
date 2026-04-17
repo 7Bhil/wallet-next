@@ -166,7 +166,7 @@ export default function TopUp() {
             
             <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                <ShieldCheck className="w-3.5 h-3.5" />
-               Transaction Sécurisée par Wallora
+               Transaction Sécurisée par Wallet
             </div>
           </div>
         </div>

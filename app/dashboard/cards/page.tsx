@@ -161,7 +161,7 @@ export default function VirtualCards() {
         <div className="space-y-2">
           <h1 className="text-4xl font-black text-slate-900 tracking-tight">Virtual Cards</h1>
           <p className="text-sm text-slate-500 max-w-md">
-            Gérez vos actifs numériques avec la sécurité Wallora. Génération instantanée, contrôle total.
+            Gérez vos actifs numériques avec la sécurité Wallet. Génération instantanée, contrôle total.
           </p>
           {user?.defaultCardId && <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full w-fit mt-2 border border-emerald-100 italic">Réception automatique activée sur une carte</p>}
         </div>
@@ -387,7 +387,7 @@ export default function VirtualCards() {
               {/* Security Banner */}
               <div className="bg-black rounded-[24px] p-8 text-white relative overflow-hidden">
                  <div className="relative z-10 space-y-4">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallora Shield</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallet Shield</p>
                     <h4 className="text-lg font-bold leading-tight">Vos transactions<br />sont chiffrées 256-bit</h4>
                     <div className="flex items-center gap-2 text-emerald-400">
                       <ShieldCheck className="w-4 h-4" />
@@ -501,7 +501,7 @@ export default function VirtualCards() {
                     rate: '18%', 
                     color: 'from-slate-800 to-slate-950', 
                     text: 'text-white',
-                    desc: 'Le summum de l\'exclusivité Wallora Platinum.'
+                    desc: 'Le summum de l\'exclusivité Wallet Platinum.'
                   }
                 ].map((tier) => (
                   <motion.div 
