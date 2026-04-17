@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [feed, setFeed] = useState<any[]>([]);
+  const [ratesData, setRatesData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
   const [token, setToken] = useState<string | null>(null);
@@ -53,14 +54,16 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${t}` };
-      const [statsRes, usersRes, feedRes] = await Promise.all([
+      const [statsRes, usersRes, feedRes, ratesRes] = await Promise.all([
         axios.get("http://localhost:5000/admin/stats", { headers }),
         axios.get("http://localhost:5000/admin/users", { headers }),
         axios.get("http://localhost:5000/admin/feed", { headers }),
+        axios.get("http://localhost:5000/currency/rates", { headers }),
       ]);
       setStats(statsRes.data);
       setUsers(usersRes.data);
       setFeed(feedRes.data);
+      setRatesData(ratesRes.data);
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     } finally {
@@ -143,6 +146,55 @@ export default function AdminDashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* Currency Exchange Monitor */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-[44px] shadow-sm border border-slate-100 p-8"
+      >
+        <div className="flex items-center justify-between mb-8">
+           <div>
+              <h3 className="text-lg font-black text-slate-900 leading-tight">Currency Market Monitor</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Live exchange rates & spread analysis</p>
+           </div>
+           <div className="px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100">
+              <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Platform Spread: {((ratesData?.commission || 0) * 100).toFixed(1)}%</span>
+           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+           {ratesData?.toBSD && Object.entries(ratesData.toBSD).filter(([c]) => ['EUR', 'GBP', 'XOF'].includes(c)).map(([currency, platformRate]: [string, any]) => {
+             const commission = ratesData.commission || 0.02;
+             const realRate = platformRate / (1 - commission);
+             const profit = realRate - platformRate;
+             
+             return (
+              <div key={currency} className="p-6 rounded-3xl bg-slate-50/50 border border-slate-100 space-y-4">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-bold text-xs">{currency.slice(0, 1)}</div>
+                    <span className="text-sm font-black text-slate-900">{currency} / B$</span>
+                 </div>
+                 <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] font-bold text-slate-400 uppercase">Market Rate</span>
+                       <span className="text-xs font-bold text-slate-900">{realRate.toFixed(currency === 'XOF' ? 6 : 4)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] font-bold text-emerald-600 uppercase">Platform Rate</span>
+                       <span className="text-xs font-black text-emerald-600">{platformRate.toFixed(currency === 'XOF' ? 6 : 4)}</span>
+                    </div>
+                    <div className="h-px bg-slate-200" />
+                    <div className="flex justify-between items-center text-indigo-600">
+                       <span className="text-[10px] font-bold uppercase">Our Profit</span>
+                       <span className="text-xs font-black">+{profit.toFixed(currency === 'XOF' ? 6 : 4)} B$</span>
+                    </div>
+                 </div>
+              </div>
+             );
+           })}
+        </div>
+      </motion.div>
 
       {/* Main Grid: Users & Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
