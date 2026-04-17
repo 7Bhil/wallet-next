@@ -13,7 +13,8 @@ import {
   User,
   Send,
   Menu,
-  X
+  X,
+  TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -34,6 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (user?.role === 'ADMIN') {
     menuItems.push({ name: "Admin Terminal", icon: LayoutDashboard, href: "/dashboard/admin" });
+    menuItems.push({ name: "Analyses", icon: TrendingUp, href: "/dashboard/admin/finances" });
   }
 
   const getInitials = (name: string) => {
