@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const menuItems = [
+  let menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { name: "Cards", icon: CreditCard, href: "/dashboard/cards" },
     { name: "Top-up", icon: ArrowUpCircle, href: "/dashboard/topup" },
@@ -31,6 +31,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Transactions", icon: History, href: "/dashboard/transactions" },
     { name: "Profile", icon: User, href: "/dashboard/profile" },
   ];
+
+  if (user?.role === 'ADMIN') {
+    menuItems.push({ name: "Admin Terminal", icon: LayoutDashboard, href: "/dashboard/admin" });
+  }
 
   const getInitials = (name: string) => {
     return name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "??";
