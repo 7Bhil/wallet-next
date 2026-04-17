@@ -7,11 +7,13 @@ import {
   ArrowDownLeft, 
   Wifi, 
   Smartphone,
-  CheckCircle2
+  CheckCircle2,
+  Wallet,
+  ShieldCheck,
+  CreditCard as CardIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { formatBSD } from "@/utils/currency";
@@ -19,21 +21,32 @@ import { formatBSD } from "@/utils/currency";
 export default function Dashboard() {
   const { user } = useAuth();
   const [transactions, setTransactions] = React.useState<any[]>([]);
+  const [cards, setCards] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const fetchTransactions = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/transactions/my", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setTransactions(response.data.slice(0, 3)); // Only show last 3
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [txnRes, cardRes] = await Promise.all([
+          axios.get("http://localhost:5000/transactions/my", { headers }),
+          axios.get("http://localhost:5000/cards/my", { headers })
+        ]);
+        
+        setTransactions(txnRes.data.slice(0, 3));
+        setCards(cardRes.data);
       } catch (error) {
-        console.error("Error fetching transactions:", error);
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchTransactions();
+    fetchData();
   }, []);
+
+  const totalBalance = (user?.balance || 0) + cards.reduce((acc, c) => acc + (c.cardBalance || 0), 0);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -57,22 +70,49 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Balance Section */}
-        <div className="lg:col-span-8 bg-[#F1F4FF] rounded-[32px] p-8 flex flex-col justify-between min-h-[220px]">
-          <div>
-             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Solde Global</p>
-              <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
-                {formatBSD(user?.balance || 0)}
+        <div className="lg:col-span-8 bg-white border border-slate-100 rounded-[32px] p-8 flex flex-col justify-between shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Solde Global</p>
+              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                {formatBSD(totalBalance)}
               </h2>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-[#065F46] text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-[#047857] transition-all group shadow-lg shadow-emerald-900/10">
+                <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+                Recharger
+              </Link>
+              <Link href="/dashboard/send" className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                Envoyer
+              </Link>
+            </div>
           </div>
-          
-          <div className="flex gap-3 mt-8">
-            <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-[#065F46] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#047857] transition-all group">
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              Recharger
-            </Link>
-            <button className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
-              Virer
-            </button>
+
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Répartition des Fonds</h4>
+            <div className="flex flex-wrap gap-4">
+               {/* Vault Wallet */}
+               <div className="bg-[#F1F4FF] p-4 rounded-2xl min-w-[160px] flex-1">
+                  <div className="flex items-center gap-2 text-[#4F6DFF] mb-2">
+                     <ShieldCheck className="w-4 h-4" />
+                     <span className="text-[9px] font-black uppercase tracking-tighter">Coffre-fort</span>
+                  </div>
+                  <p className="text-lg font-black text-slate-900">{formatBSD(user?.balance || 0)}</p>
+               </div>
+
+               {/* Card Wallets */}
+               {cards.map(card => (
+                 <div key={card._id} className="bg-slate-50 p-4 rounded-2xl min-w-[160px] flex-1 border border-slate-100/50">
+                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                       <CardIcon className="w-4 h-4" />
+                       <span className="text-[9px] font-black uppercase tracking-tighter truncate max-w-[100px]">{card.name}</span>
+                    </div>
+                    <p className="text-lg font-black text-slate-900">{formatBSD(card.cardBalance || 0)}</p>
+                 </div>
+               ))}
+            </div>
           </div>
         </div>
         {/* ... Card Section stays the same ... */}

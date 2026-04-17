@@ -30,6 +30,11 @@ export default function SendPage() {
   const [sendNote, setSendNote] = useState("");
   const [sendLoading, setSendLoading] = useState(false);
   const [sendFeedback, setSendFeedback] = useState<Feedback>(null);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // --- Card transfer state ---
   const [cards, setCards] = useState<any[]>([]);
@@ -56,6 +61,29 @@ export default function SendPage() {
     fetchCards();
   }, []);
 
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        setIsSearching(true);
+        try {
+          const token = localStorage.getItem("token");
+          const res = await axios.get(`http://localhost:5000/users/search?q=${searchQuery}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setSearchResults(res.data);
+        } catch (e) {
+          console.error("Search error", e);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
   const handleUserTransfer = async () => {
     if (!recipientEmail || !sendAmount) return;
     setSendLoading(true);
@@ -73,6 +101,7 @@ export default function SendPage() {
         text: `${formatBSD(parseFloat(sendAmount))} envoyés avec succès à ${recipientEmail} !`
       });
       setRecipientEmail("");
+      setSearchQuery("");
       setSendAmount("");
       setSendNote("");
     } catch (err: any) {
@@ -187,16 +216,63 @@ export default function SendPage() {
               )}
             </AnimatePresence>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email du destinataire</label>
-              <input
-                type="email"
-                value={recipientEmail}
-                onChange={e => setRecipientEmail(e.target.value)}
-                placeholder="user@exemple.com"
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
-              />
+            {/* Recipient Search */}
+            <div className="space-y-2 relative">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Destinataire (Nom ou Email)</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery || recipientEmail}
+                  onChange={e => {
+                    setSearchQuery(e.target.value);
+                    if (recipientEmail) setRecipientEmail(""); // Clear selection if typing
+                  }}
+                  placeholder="Ex: Jean Dupont ou jean@exemple.com"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
+                />
+                {isSearching && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+
+              {/* Search Results Dropdown */}
+              <AnimatePresence>
+                {searchResults.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className="absolute z-50 left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                  >
+                    {searchResults.map(u => (
+                      <button
+                        key={u._id}
+                        onClick={() => {
+                          setRecipientEmail(u.email);
+                          setSearchQuery(u.fullName);
+                          setSearchResults([]);
+                        }}
+                        className="w-full text-left px-5 py-4 hover:bg-slate-50 flex items-center justify-between group transition-colors border-b border-slate-50 last:border-b-0"
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{u.fullName}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{u.email}</p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {recipientEmail && !searchResults.length && (
+                <div className="flex items-center gap-2 mt-2 ml-1">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Destinataire sélectionné : {recipientEmail}</p>
+                </div>
+              )}
             </div>
 
             {/* Amount */}
@@ -214,7 +290,7 @@ export default function SendPage() {
               </div>
               <div className="flex gap-2 flex-wrap mt-2">
                 {[10, 50, 100, 500].map(v => (
-                  <button key={v} onClick={() => setSendAmount(v.toString())}
+                  <button key={v} onClick={() => setSendAmount(prev => (parseFloat(prev || "0") + v).toString())}
                     className="px-4 py-1.5 rounded-xl bg-slate-50 text-slate-600 text-xs font-bold hover:bg-slate-900 hover:text-white transition-all">
                     +B${v}
                   </button>

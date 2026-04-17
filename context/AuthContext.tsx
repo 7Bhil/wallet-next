@@ -1,8 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { io, Socket } from "socket.io-client";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, X, CheckCircle2 } from "lucide-react";
 
 interface User {
   id: string;
@@ -12,6 +15,13 @@ interface User {
   balance: number;
   currency: string;
   defaultCardId: string;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
 }
 
 interface AuthContextType {
@@ -27,6 +37,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const socketRef = useRef<Socket | null>(null);
   const router = useRouter();
 
   const fetchUser = async () => {
@@ -41,11 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
+      initSocket(token);
     } catch (error: any) {
       console.error("Failed to fetch user:", error);
       localStorage.removeItem("token");
       setUser(null);
-      // Si le token est invalide/expiré, redirection vers login
       if (error?.response?.status === 401) {
         router.push("/login");
       }
@@ -54,8 +66,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const initSocket = (token: string) => {
+    if (socketRef.current) return;
+
+    const socket = io("http://localhost:5000", {
+      auth: { token }
+    });
+
+    socket.on("notification", (data) => {
+      const newNotif = { ...data, id: Date.now().toString() };
+      setNotifications(prev => [newNotif, ...prev]);
+      
+      // Auto refresh user balance on notification
+      fetchUser();
+
+      // Auto remove after 5s
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
+      }, 5000);
+    });
+
+    socketRef.current = socket;
+  };
+
   useEffect(() => {
     fetchUser();
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
   }, []);
 
   const login = (token: string) => {
@@ -65,13 +106,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
     setUser(null);
     router.push("/login");
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchUser }}>
       {children}
+      
+      {/* Real-time Notifications Toast */}
+      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 w-full max-w-[380px]">
+        <AnimatePresence>
+          {notifications.map((n) => (
+            <motion.div
+              key={n.id}
+              initial={{ opacity: 0, x: 50, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-2xl shadow-emerald-900/10 border border-slate-50 p-5 flex gap-4 overflow-hidden relative group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                 <Bell className="w-5 h-5 text-emerald-600 animate-bounce" />
+              </div>
+              <div className="flex-1 space-y-1">
+                 <div className="flex justify-between items-start">
+                    <h5 className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{n.title}</h5>
+                    <button onClick={() => removeNotification(n.id)} className="text-slate-300 hover:text-slate-600">
+                       <X className="w-3.5 h-3.5" />
+                    </button>
+                 </div>
+                 <p className="text-sm font-bold text-slate-900 leading-tight">{n.message}</p>
+                 <div className="flex items-center gap-1.5 pt-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Instantané</span>
+                 </div>
+              </div>
+              <div className="absolute left-0 bottom-0 h-1 bg-emerald-500 w-full origin-left animate-shrink" />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </AuthContext.Provider>
   );
 }

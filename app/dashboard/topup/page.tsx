@@ -110,7 +110,7 @@ export default function TopUp() {
                {[50, 100, 500, 1000].map((val) => (
                  <button 
                   key={val}
-                  onClick={() => setAmount(val.toString())}
+                  onClick={() => setAmount(prev => (parseFloat(prev || "0") + val).toString())}
                   className="px-4 lg:px-6 py-2 rounded-xl bg-slate-50 text-slate-600 text-xs font-bold hover:bg-slate-900 hover:text-white transition-all outline-none"
                  >
                    +{val}{CURRENCY_SYMBOLS[selectedCurrency]}

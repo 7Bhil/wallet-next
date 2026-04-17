@@ -589,7 +589,7 @@ export default function VirtualCards() {
                   {[10, 50, 100].map(val => (
                     <button 
                       key={val}
-                      onClick={() => setTopupAmount(val.toString())}
+                      onClick={() => setTopupAmount(prev => (parseFloat(prev || "0") + val).toString())}
                       className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all outline-none"
                     >
                       +B${val}

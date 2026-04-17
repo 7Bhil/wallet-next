@@ -7,6 +7,15 @@
   --foreground: #171717;
 }
 
+@layer utilities {
+  @keyframes shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+  .animate-shrink {
+    animation: shrink 5s linear forwards;
+  }
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
