@@ -195,12 +195,14 @@ export default function AdminDashboard() {
                            </span>
                         </td>
                         <td className="px-8 py-6 text-right">
-                           <button 
-                            onClick={() => handleToggleStatus(u._id)}
-                            className="p-2.2 rounded-xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-900 transition-all"
-                           >
-                              {u.status === 'ACTIVE' ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                           </button>
+                           {u._id !== user?.id && (
+                             <button 
+                              onClick={() => handleToggleStatus(u._id)}
+                              className="p-2.2 rounded-xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-900 transition-all"
+                             >
+                                {u.status === 'ACTIVE' ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                             </button>
+                           )}
                         </td>
                       </tr>
                     ))}
