@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
+import ReverseCalculator from "@/components/ReverseCalculator";
 
 type Tab = "user" | "card";
 type Feedback = { type: "success" | "error"; text: string } | null;
@@ -198,6 +199,9 @@ export default function SendPage() {
             exit={{ opacity: 0, y: -10 }}
             className="bg-white rounded-[40px] p-8 md:p-10 space-y-8 border border-slate-50 shadow-sm"
           >
+            {/* Reverse Calculator Helper */}
+            <ReverseCalculator onCalculate={(amt) => setSendAmount(amt.toString())} />
+
             {/* Feedback */}
             <AnimatePresence>
               {sendFeedback && (
