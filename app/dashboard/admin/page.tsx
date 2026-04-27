@@ -23,9 +23,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [feed, setFeed] = useState<any[]>([]);
@@ -225,7 +227,7 @@ export default function AdminDashboard() {
                  </thead>
                  <tbody className="divide-y divide-slate-50">
                     {users.map((u) => (
-                      <tr key={u._id} className="group hover:bg-slate-50/50 transition-colors">
+                      <tr key={u._id} className="group hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => router.push(`/dashboard/admin/users/${u._id}`)}>
                         <td className="px-8 py-6">
                            <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-xs uppercase">
@@ -249,7 +251,7 @@ export default function AdminDashboard() {
                         <td className="px-8 py-6 text-right">
                            {u._id !== user?.id && (
                              <button 
-                              onClick={() => handleToggleStatus(u._id)}
+                              onClick={(e) => { e.stopPropagation(); handleToggleStatus(u._id); }}
                               className="p-2.2 rounded-xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-900 transition-all"
                              >
                                 {u.status === 'ACTIVE' ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
