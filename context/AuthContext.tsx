@@ -31,6 +31,9 @@ interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  notifications: Notification[];
+  persistentNotifications: Notification[];
+  clearPersistentNotifications: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [persistentNotifications, setPersistentNotifications] = useState<Notification[]>([]);
+
   const socketRef = useRef<Socket | null>(null);
   const router = useRouter();
 
@@ -85,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     socket.on("notification", (data) => {
       const newNotif = { ...data, id: Date.now().toString() };
       setNotifications(prev => [newNotif, ...prev]);
+      setPersistentNotifications(prev => [newNotif, ...prev].slice(0, 50));
       
       // Auto refresh user balance on notification
       fetchUser();
@@ -127,8 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const clearPersistentNotifications = () => setPersistentNotifications([]);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchUser, notifications, persistentNotifications, clearPersistentNotifications }}>
       {children}
       
       {/* Real-time Notifications Toast */}

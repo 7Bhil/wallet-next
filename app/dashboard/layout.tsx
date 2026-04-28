@@ -14,15 +14,19 @@ import {
   Send,
   Menu,
   X,
-  TrendingUp
+  TrendingUp,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, persistentNotifications, clearPersistentNotifications } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   let menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -42,6 +46,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "??";
   };
 
+  const unreadCount = persistentNotifications.length;
+
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
       {/* Mobile Sidebar Overlay */}
@@ -54,6 +60,89 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={() => setIsSidebarOpen(false)}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
           />
+        )}
+      </AnimatePresence>
+
+      {/* Notification Panel Overlay */}
+      <AnimatePresence>
+        {isNotifOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNotifOpen(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            />
+            <motion.aside
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="fixed top-0 right-0 h-full w-full max-w-[380px] bg-white shadow-2xl z-50 flex flex-col"
+            >
+              {/* Notif Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Notifications</h2>
+                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">{unreadCount} nouvelle(s)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={clearPersistentNotifications}
+                      className="p-2 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsNotifOpen(false)}
+                    className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Notif List */}
+              <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
+                {persistentNotifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+                    <Bell className="w-10 h-10 opacity-30" />
+                    <p className="text-sm font-bold">Aucune notification pour l'instant.</p>
+                    <p className="text-xs text-slate-300">Vous serez notifié lors de vos transactions.</p>
+                  </div>
+                ) : (
+                  <AnimatePresence>
+                    {persistentNotifications.map((n, i) => {
+                      const isCredit = n.type === "TRANSFER_IN" || n.type === "TOPUP";
+                      return (
+                        <motion.div
+                          key={n.id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="p-5 flex gap-4 items-start hover:bg-slate-50 transition-colors"
+                        >
+                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${isCredit ? "bg-emerald-50" : "bg-slate-50"}`}>
+                            {isCredit
+                              ? <ArrowDownLeft className="w-4 h-4 text-emerald-500" />
+                              : <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-[11px] font-black uppercase tracking-wider ${isCredit ? "text-emerald-600" : "text-slate-500"}`}>{n.title}</p>
+                            <p className="text-sm font-bold text-slate-900 leading-tight mt-0.5">{n.message}</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                )}
+              </div>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
@@ -115,7 +204,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <main className="flex-1 lg:ml-[280px] w-full min-w-0">
         {/* Top Bar */}
-        <header className="h-[72px] flex items-center justify-between px-4 lg:px-8 sticky top-0 bg-[#F8FAFC]/80 backdrop-blur-md z-40">
+        <header className="h-[72px] flex items-center justify-between px-4 lg:px-8 sticky top-0 bg-[#F8FAFC]/80 backdrop-blur-md z-30">
           <div className="flex items-center gap-3">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 bg-white rounded-xl shadow-sm text-slate-900">
                <Menu className="w-5 h-5" />
@@ -131,10 +220,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-2 lg:gap-5">
-            <button className="relative w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-500 hover:text-slate-900">
+            {/* Notification Bell */}
+            <button
+              onClick={() => setIsNotifOpen(true)}
+              className="relative w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-500 hover:text-slate-900"
+            >
               <Bell className="w-4.5 h-4.5" />
-              <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 border-2 border-white rounded-full" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 border-2 border-white rounded-full text-[9px] font-black text-white flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </button>
+
             <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-slate-200">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900">{user?.fullName}</p>
