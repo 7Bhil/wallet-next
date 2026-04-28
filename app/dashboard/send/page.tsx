@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { formatBSD } from "@/utils/currency";
+import { formatBSD, formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 import ReverseCalculator from "@/components/ReverseCalculator";
 
@@ -85,6 +85,8 @@ export default function SendPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
+  const userCurrency = user?.currency || 'USD';
+
   const handleUserTransfer = async () => {
     if (!recipientEmail || !sendAmount) return;
     setSendLoading(true);
@@ -99,7 +101,7 @@ export default function SendPage() {
       await refreshUser();
       setSendFeedback({
         type: "success",
-        text: `${formatBSD(parseFloat(sendAmount))} envoyés avec succès à ${recipientEmail} !`
+        text: `${formatLocal(parseFloat(sendAmount), userCurrency)} envoyés avec succès à ${recipientEmail} !`
       });
       setRecipientEmail("");
       setSearchQuery("");
@@ -130,7 +132,7 @@ export default function SendPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCards(res.data);
-      setCardFeedback({ type: "success", text: `Transfert de ${formatBSD(parseFloat(cardAmount))} effectué !` });
+      setCardFeedback({ type: "success", text: `Transfert de ${formatLocal(parseFloat(cardAmount), userCurrency)} effectué !` });
       setCardAmount("");
     } catch (err: any) {
       setCardFeedback({
@@ -145,7 +147,7 @@ export default function SendPage() {
   const getCardName = (id: string) => cards.find(c => c._id === id)?.name || "—";
   const getCardBalance = (id: string) => {
     const c = cards.find(c => c._id === id);
-    return c ? formatBSD(c.cardBalance || 0) : "—";
+    return c ? formatLocal(c.cardBalance || 0, userCurrency) : "—";
   };
 
   return (
@@ -153,14 +155,14 @@ export default function SendPage() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">Envoyer</h1>
-        <p className="text-sm text-slate-500">Transférez des B$ à un autre utilisateur ou entre vos propres cartes.</p>
+        <p className="text-sm text-slate-500">Transférez des fonds instantanément à un autre utilisateur.</p>
       </div>
 
       {/* Solde rapide */}
       <div className="bg-[#F1F4FF] rounded-[28px] px-8 py-5 flex items-center justify-between">
         <div>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Votre Solde Disponible</p>
-          <p className="text-3xl font-black text-slate-900 tracking-tight">{formatBSD(user?.balance || 0)}</p>
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Votre Solde Disponible ({userCurrency})</p>
+          <p className="text-3xl font-black text-slate-900 tracking-tight">{formatLocal(user?.balance || 0, userCurrency)}</p>
         </div>
         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
           <Send className="w-5 h-5 text-emerald-600" />
@@ -281,9 +283,9 @@ export default function SendPage() {
 
             {/* Amount */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant (B$)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant ({userCurrency})</label>
               <div className="flex items-center gap-4">
-                <span className="text-2xl font-black text-slate-300">B$</span>
+                <span className="text-2xl font-black text-slate-300">{userCurrency}</span>
                 <input
                   type="number"
                   value={sendAmount}
@@ -296,7 +298,7 @@ export default function SendPage() {
                 {[10, 50, 100, 500].map(v => (
                   <button key={v} onClick={() => setSendAmount(prev => (parseFloat(prev || "0") + v).toString())}
                     className="px-4 py-1.5 rounded-xl bg-slate-50 text-slate-600 text-xs font-bold hover:bg-slate-900 hover:text-white transition-all">
-                    +B${v}
+                    +{v}{userCurrency}
                   </button>
                 ))}
               </div>
@@ -403,9 +405,9 @@ export default function SendPage() {
 
                 {/* Amount */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant (B$)</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant ({userCurrency})</label>
                   <div className="flex items-center gap-4">
-                    <span className="text-2xl font-black text-slate-300">B$</span>
+                    <span className="text-2xl font-black text-slate-300">{userCurrency}</span>
                     <input
                       type="number"
                       value={cardAmount}
@@ -430,7 +432,7 @@ export default function SendPage() {
                       <span>Vers</span><span>{getCardName(toCard)} ({getCardBalance(toCard)})</span>
                     </div>
                     <div className="flex justify-between text-sm font-black text-slate-900 border-t border-slate-100 pt-2 mt-2">
-                      <span>Montant</span><span className="text-emerald-600">{formatBSD(parseFloat(cardAmount))}</span>
+                      <span>Montant</span><span className="text-emerald-600">{formatLocal(parseFloat(cardAmount), userCurrency)}</span>
                     </div>
                   </motion.div>
                 )}

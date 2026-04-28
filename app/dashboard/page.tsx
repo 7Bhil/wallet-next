@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { formatBSD } from "@/utils/currency";
+import { formatBSD, formatLocal } from "@/utils/currency";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -46,13 +46,20 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const totalBalance = (user?.balance || 0) + cards.reduce((acc, c) => acc + (c.cardBalance || 0), 0);
+  const vaultFiat = user?.balance || 0;
+  const cardsFiat = cards.reduce((acc, c) => acc + (c.cardBalance || 0), 0);
+  const totalFiat = vaultFiat + cardsFiat;
+  const userCurrency = user?.currency || 'USD';
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'TOPUP': return ArrowDownLeft;
       case 'PAYMENT': return Smartphone;
       case 'FEE': return CheckCircle2;
+      case 'TRANSFER_IN': return ArrowDownLeft;
+      case 'TRANSFER_OUT': return ArrowUpRight;
+      case 'CRYPTO_BUY': return Wallet;
+      case 'CRYPTO_SELL': return Wallet;
       default: return ArrowUpRight;
     }
   };
@@ -62,7 +69,9 @@ export default function Dashboard() {
       case 'TOPUP': return "bg-emerald-50";
       case 'PAYMENT': return "bg-slate-100";
       case 'FEE': return "bg-orange-50";
-      default: return "bg-blue-50";
+      case 'TRANSFER_IN': return "bg-emerald-50";
+      case 'CRYPTO_BUY': return "bg-blue-50";
+      default: return "bg-slate-50";
     }
   };
 
@@ -73,9 +82,9 @@ export default function Dashboard() {
         <div className="lg:col-span-8 bg-white border border-slate-100 rounded-[32px] p-8 flex flex-col justify-between shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Solde Global</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Solde Disponible ({userCurrency})</p>
               <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
-                {formatBSD(totalBalance)}
+                {formatLocal(totalFiat, userCurrency)}
               </h2>
             </div>
             <div className="flex gap-2">
@@ -91,15 +100,24 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Répartition des Fonds</h4>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vos Portefeuilles</h4>
             <div className="flex flex-wrap gap-4">
-               {/* Vault Wallet */}
-               <div className="bg-[#F1F4FF] p-4 rounded-2xl min-w-[160px] flex-1">
+               {/* Crypto Wallet (B$) */}
+               <div className="bg-[#1e293b] p-4 rounded-2xl min-w-[160px] flex-1 border border-slate-800 shadow-xl">
+                  <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                     <div className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center text-[10px] font-bold italic text-emerald-400">B</div>
+                     <span className="text-[9px] font-black uppercase tracking-tighter">Crypto Wallet</span>
+                  </div>
+                  <p className="text-lg font-black text-white">{formatBSD(user?.cryptoBalance || 0)}</p>
+               </div>
+
+               {/* Vault Wallet (Local) */}
+               <div className="bg-[#F1F4FF] p-4 rounded-2xl min-w-[160px] flex-1 border border-[#E0E7FF]">
                   <div className="flex items-center gap-2 text-[#4F6DFF] mb-2">
                      <ShieldCheck className="w-4 h-4" />
-                     <span className="text-[9px] font-black uppercase tracking-tighter">Coffre-fort</span>
+                     <span className="text-[9px] font-black uppercase tracking-tighter">Coffre-fort ({userCurrency})</span>
                   </div>
-                  <p className="text-lg font-black text-slate-900">{formatBSD(user?.balance || 0)}</p>
+                  <p className="text-lg font-black text-slate-900">{formatLocal(vaultFiat, userCurrency)}</p>
                </div>
 
                {/* Card Wallets */}
@@ -109,7 +127,7 @@ export default function Dashboard() {
                        <CardIcon className="w-4 h-4" />
                        <span className="text-[9px] font-black uppercase tracking-tighter truncate max-w-[100px]">{card.name}</span>
                     </div>
-                    <p className="text-lg font-black text-slate-900">{formatBSD(card.cardBalance || 0)}</p>
+                    <p className="text-lg font-black text-slate-900">{formatLocal(card.cardBalance || 0, userCurrency)}</p>
                  </div>
                ))}
             </div>
@@ -183,8 +201,8 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold text-base ${t.type === 'TOPUP' ? "text-emerald-600" : "text-slate-900"}`}>
-                      {t.type === 'TOPUP' ? `+ ${formatBSD(t.amount)}` : `- ${formatBSD(Math.abs(t.amount))}`}
+                    <p className={`font-bold text-base ${t.type === 'TOPUP' || t.type === 'TRANSFER_IN' ? "text-emerald-600" : "text-slate-900"}`}>
+                      {t.type === 'TOPUP' || t.type === 'TRANSFER_IN' ? "+" : "-"} {formatLocal(Math.abs(t.amount), t.targetCurrency || userCurrency)}
                     </p>
                   </div>
                 </motion.div>

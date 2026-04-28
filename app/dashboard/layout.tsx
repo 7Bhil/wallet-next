@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { formatBSD } from "@/utils/currency";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -220,6 +221,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-2 lg:gap-5">
+            {/* Crypto Balance Tag */}
+            <div className="hidden sm:flex items-center gap-2 bg-[#1e293b] text-white px-3 py-1.5 rounded-xl border border-slate-700 shadow-sm">
+               <div className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center text-[10px] font-bold italic text-emerald-400">B</div>
+               <span className="text-[11px] font-bold tracking-tight">{formatBSD(user?.cryptoBalance || 0)}</span>
+            </div>
+
             {/* Notification Bell */}
             <button
               onClick={() => setIsNotifOpen(true)}

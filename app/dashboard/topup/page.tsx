@@ -12,7 +12,7 @@ import {
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { CURRENCY_SYMBOLS, convertToBSD, formatBSD } from "@/utils/currency";
+import { CURRENCY_SYMBOLS, convertToBSD, formatBSD, formatLocal } from "@/utils/currency";
 
 export default function TopUp() {
   const { user, refreshUser } = useAuth();
@@ -20,10 +20,22 @@ export default function TopUp() {
   const [selectedCurrency, setSelectedCurrency] = useState(user?.currency || "USD");
   const [method, setMethod] = useState("Bank Transfer");
   const [loading, setLoading] = useState(false);
+  const [rates, setRates] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   React.useEffect(() => {
     if (user?.currency) setSelectedCurrency(user.currency);
+    
+    // Fetch rates for preview
+    const fetchRates = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/currency/rates");
+        setRates(res.data);
+      } catch (e) {
+        console.error("Rates fetch failed", e);
+      }
+    };
+    fetchRates();
   }, [user]);
 
   const fees = {
@@ -33,9 +45,20 @@ export default function TopUp() {
   };
 
   const currentFee = fees[method as keyof typeof fees];
-  const calculatedFee = (parseFloat(amount) || 0) * currentFee;
-  const netLocalAmount = (parseFloat(amount) || 0) - calculatedFee;
-  const bsdAmount = convertToBSD(netLocalAmount, selectedCurrency);
+  const inputAmount = parseFloat(amount) || 0;
+  const calculatedFee = inputAmount * currentFee;
+  const netLocalAmount = inputAmount - calculatedFee;
+  
+  // Calculate what user will receive in their NATIVE currency
+  const userCurrency = user?.currency || 'USD';
+  const getArrivalAmount = () => {
+    if (!rates || !rates.fiatRates) return netLocalAmount;
+    const rateFrom = rates.fiatRates[selectedCurrency] || 1;
+    const rateTo = rates.fiatRates[userCurrency] || 1;
+    return (netLocalAmount / rateFrom) * rateTo * (1 - (rates.commission || 0.02));
+  };
+
+  const arrivalAmount = getArrivalAmount();
 
   const handleRecharge = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
@@ -53,7 +76,7 @@ export default function TopUp() {
       });
 
       await refreshUser();
-      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} → ${formatBSD(bsdAmount)} crédités !` });
+      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} → ${arrivalAmount.toFixed(2)} ${userCurrency} crédités !` });
       setAmount("");
     } catch (error) {
       console.error("Recharge failed:", error);
@@ -148,10 +171,10 @@ export default function TopUp() {
                <div className="h-px bg-slate-100" />
                <div className="flex justify-between text-lg font-bold text-slate-900">
                   <span>Vous recevrez</span>
-                  <span className="text-emerald-600">{formatBSD(bsdAmount)}</span>
+                  <span className="text-emerald-600">{formatLocal(arrivalAmount, userCurrency)}</span>
                </div>
                <p className="text-[10px] text-slate-400 font-medium">
-                 {netLocalAmount.toFixed(2)} {selectedCurrency} converti au taux 1 {selectedCurrency} = {formatBSD(convertToBSD(1, selectedCurrency))}
+                 {netLocalAmount.toFixed(2)} {selectedCurrency} converti en {userCurrency} avec un spread de 2%
                </p>
             </div>
 

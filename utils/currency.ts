@@ -47,8 +47,20 @@ export function convertFromBSD(bsdAmount: number, toCurrency: string): number {
   return bsdAmount * rate;
 }
 
+/** Affichage local : Dépend de la devise de l'utilisateur */
+export function formatLocal(amount: number, currency: string = "XOF"): string {
+  const symbol = CURRENCY_SYMBOLS[currency.toUpperCase()] || currency;
+  const formatted = new Intl.NumberFormat("fr-FR", {
+    minimumFractionDigits: currency.toUpperCase() === "XOF" ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+  return currency.toUpperCase() === "XOF" ? `${formatted} ${symbol}` : `${symbol}${formatted}`;
+}
+
 /** [LEGACY] Gardé pour compatibilité, utilise formatBSD en interne */
-export function formatAmount(amount: number, _currency?: string): string {
+export function formatAmount(amount: number, currency?: string): string {
+  if (currency && currency !== "BSD") return formatLocal(amount, currency);
   return formatBSD(amount);
 }
 

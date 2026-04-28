@@ -14,6 +14,7 @@ interface User {
   email: string;
   role: string;
   balance: number;
+  cryptoBalance: number;
   currency: string;
   defaultCardId: string;
 }
