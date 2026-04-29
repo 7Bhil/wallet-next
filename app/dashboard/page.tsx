@@ -246,7 +246,7 @@ export default function Dashboard() {
                 <CheckCircle2 className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
              </div>
              <button className="w-full bg-[#065F46] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#047857] transition-all">
-                Recharger B$ 500
+                Recharger 500 {userCurrency}
              </button>
           </div>
         </div>

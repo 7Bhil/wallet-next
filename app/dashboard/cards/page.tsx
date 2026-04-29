@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { formatBSD, convertToBSD, CURRENCY_SYMBOLS } from "@/utils/currency";
+import { formatBSD, formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function VirtualCards() {
@@ -254,7 +254,7 @@ export default function VirtualCards() {
                     </div>
                     <div>
                       <p className="text-[8px] uppercase opacity-40 font-bold mb-0.5 text-right font-bold">Disponible</p>
-                      <p className="text-sm font-bold text-right">{formatBSD(card.cardBalance || 0)}</p>
+                      <p className="text-sm font-bold text-right">{formatLocal(card.cardBalance || 0, user?.currency || 'USD')}</p>
                     </div>
                   </div>
                 </div>
@@ -268,7 +268,7 @@ export default function VirtualCards() {
                 <div className="flex gap-8">
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Plafond Mensuel</p>
-                    <p className="text-sm font-bold text-slate-900">{card.limitValue ? formatBSD(card.limitValue) : card.limit}</p>
+                    <p className="text-sm font-bold text-slate-900">{card.limit}</p>
                   </div>
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Taux d'intérêt</p>
@@ -333,7 +333,7 @@ export default function VirtualCards() {
                     </div>
                     <div className="flex items-center gap-4">
                        <p className={`text-[15px] font-bold ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
-                         {isCredit ? "+" : "-"}{formatBSD(Math.abs(t.amount))}
+                         {isCredit ? "+" : "-"}{formatLocal(Math.abs(t.amount), user?.currency || 'USD')}
                        </p>
                        <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">{t.status}</span>
                     </div>
@@ -525,7 +525,7 @@ export default function VirtualCards() {
                     <div className="space-y-3 pt-6 border-t border-slate-50">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
-                        <span className="text-sm font-black text-slate-900">{formatBSD(tier.limitValue)}</span>
+                        <span className="text-sm font-black text-slate-900">{formatLocal(tier.limitValue, user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Taux d'intérêt</span>
@@ -563,7 +563,7 @@ export default function VirtualCards() {
               </div>
               <h4 className="text-xl font-black text-slate-900 mb-2">Alimenter la carte</h4>
               <p className="text-sm text-slate-500 mb-6">
-                Le montant sera déduit de votre solde principal (Solde: {formatBSD(user?.balance || 0)}).
+                Le montant sera déduit de votre solde principal (Solde: {formatLocal(user?.balance || 0, user?.currency || 'USD')}).
               </p>
 
               {topupFeedback && (
@@ -575,14 +575,14 @@ export default function VirtualCards() {
               
               <div className="space-y-4 mb-8">
                 <div className="relative">
-                   <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-300">B$</div>
+                   <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-300">{user?.currency || 'USD'}</div>
                    <input 
                     type="number"
                     value={topupAmount}
                     onChange={(e) => setTopupAmount(e.target.value)}
                     placeholder="0.00"
                     autoFocus
-                    className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-12 py-4 text-slate-900 font-bold outline-none transition-all"
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-16 py-4 text-slate-900 font-bold outline-none transition-all"
                    />
                 </div>
                 <div className="flex gap-2">
@@ -592,7 +592,7 @@ export default function VirtualCards() {
                       onClick={() => setTopupAmount(prev => (parseFloat(prev || "0") + val).toString())}
                       className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all outline-none"
                     >
-                      +B${val}
+                      +{val}{user?.currency || 'USD'}
                     </button>
                   ))}
                 </div>
