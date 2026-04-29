@@ -15,7 +15,7 @@ import {
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { CURRENCY_SYMBOLS, formatBSD } from "@/utils/currency";
+import { CURRENCY_SYMBOLS, formatLocal } from "@/utils/currency";
 
 interface ProfileItem {
   label: string;
@@ -138,7 +138,9 @@ export default function Profile() {
                   <Wallet className="w-4 h-4" />
                   <h4 className="text-[10px] font-black uppercase tracking-widest">Solde Coffre-Fort</h4>
               </div>
-              <p className="text-3xl font-black text-slate-900 tracking-tight">{formatBSD(user?.balance || 0)}</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tight">
+                {formatLocal(user?.balance || 0, user?.currency || 'USD')}
+              </p>
               <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
                 Fonds disponibles pour alimenter vos cartes ou envoyer à des tiers.
               </p>
