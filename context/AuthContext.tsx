@@ -106,8 +106,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Global interceptor for 401 handling
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          // If not already on login page, force logout
+          if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
+            logout();
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
     fetchUser();
     return () => {
+      axios.interceptors.response.eject(interceptor);
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
