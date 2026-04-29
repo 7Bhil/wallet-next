@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { formatBSD } from "@/utils/currency";
+import { formatLocal, formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminFinances() {
@@ -48,7 +48,7 @@ export default function AdminFinances() {
   };
 
   if (user?.role !== 'ADMIN') {
-    return <div className="p-8 text-center">Accès refusé</div>;
+    return <div className="p-8 text-center text-slate-500 font-bold">Accès refusé</div>;
   }
 
   const commission = ratesData?.commission || 0.02;
@@ -125,11 +125,11 @@ export default function AdminFinances() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-1">
                        <p className="text-[10px] font-bold text-slate-400 uppercase">Valeur Réelle (Marché)</p>
-                       <p className="text-2xl font-black text-slate-900">B$ {totalMarketValue.toFixed(4)}</p>
+                       <p className="text-2xl font-black text-slate-900">{formatLocal(totalMarketValue, 'USD')} (equiv.)</p>
                     </div>
                     <div className="p-6 rounded-2xl bg-indigo-50/30 border border-indigo-100/50 space-y-1">
                        <p className="text-[10px] font-bold text-indigo-400 uppercase">Attribué Utilisateur</p>
-                       <p className="text-2xl font-black text-indigo-600">B$ {userReceives.toFixed(4)}</p>
+                       <p className="text-2xl font-black text-indigo-600">{formatLocal(userReceives, 'USD')} (equiv.)</p>
                     </div>
                  </div>
 
