@@ -159,7 +159,7 @@ export default function AdminFinances() {
                        </div>
                        <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase">Profit Net Platform</p>
-                          <h3 className="text-4xl font-black text-white">+{platformProfit.toFixed(4)} B$</h3>
+                          <h3 className="text-4xl font-black text-white">+{formatBSD(platformProfit)}</h3>
                        </div>
                     </div>
                     <button className="px-6 py-3 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-100 transition-colors">
@@ -172,13 +172,13 @@ export default function AdminFinances() {
            {/* Simple Cards */}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
-                { label: "Projection Hebdomadaire", val: "+1,400 B$", desc: "Basé sur le volume actuel", icon: TrendingUp },
-                { label: "Objectif du mois", val: "5,000 B$", desc: "45% complété", icon: Target },
+                { label: "Projection Hebdomadaire", val: "+1,400", desc: "Volume Platform estimé", icon: TrendingUp },
+                { label: "Objectif du mois", val: "5,000", desc: "45% complété", icon: Target },
               ].map((item, i) => (
                 <div key={i} className="bg-white p-8 rounded-[28px] border border-slate-100 shadow-sm flex items-start justify-between">
                    <div className="space-y-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase">{item.label}</p>
-                      <p className="text-2xl font-black text-slate-900">{item.val}</p>
+                      <p className="text-2xl font-black text-slate-900">{item.val} B$</p>
                       <p className="text-xs text-slate-400">{item.desc}</p>
                    </div>
                    <item.icon className="w-5 h-5 text-slate-300" />
@@ -207,7 +207,7 @@ export default function AdminFinances() {
                        </div>
                        <div className="text-right">
                           <p className="text-sm font-bold text-slate-900">+{ (mRate - pRate).toFixed(currency === 'XOF' ? 6 : 4) }</p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase">Profit / Unité</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Points / Unité</p>
                        </div>
                     </div>
                    );

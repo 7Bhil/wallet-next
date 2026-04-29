@@ -15,7 +15,7 @@ import {
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { formatBSD } from "@/utils/currency";
+import { formatLocal } from "@/utils/currency";
 
 export default function Transactions() {
   const { user } = useAuth();
@@ -46,9 +46,9 @@ export default function Transactions() {
   }, 0);
 
   const stats = [
-    { label: "Cashflow Net", value: formatBSD(netCashflow), color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Volume Total", value: formatBSD(transactions.reduce((acc, t) => acc + t.amount, 0)), color: "text-slate-500", bg: "bg-slate-50" },
-    { label: "Solde Actuel", value: formatBSD(user?.balance || 0), color: "text-white", bg: "bg-black" },
+    { label: "Cashflow Net", value: formatLocal(netCashflow, user?.currency || 'USD'), color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Volume Total", value: formatLocal(transactions.reduce((acc, t) => acc + t.amount, 0), user?.currency || 'USD'), color: "text-slate-500", bg: "bg-slate-50" },
+    { label: "Solde Actuel", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), color: "text-white", bg: "bg-black" },
   ];
 
   const getIcon = (type: string) => {
@@ -130,7 +130,7 @@ export default function Transactions() {
                   </div>
                   <div className="text-right">
                     <p className={`font-bold text-base ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
-                      {isCredit ? `+ ${formatBSD(t.amount)}` : `- ${formatBSD(Math.abs(t.amount))}`}
+                      {isCredit ? `+ ${formatLocal(t.amount, t.targetCurrency || user?.currency || 'USD')}` : `- ${formatLocal(Math.abs(t.amount), user?.currency || 'USD')}`}
                     </p>
                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1 bg-emerald-50 px-2 py-0.5 rounded inline-block">Validé</p>
                   </div>

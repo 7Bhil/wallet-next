@@ -17,7 +17,7 @@ import {
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
-import { formatBSD } from "@/utils/currency";
+import { formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminUserAuditPage() {
@@ -136,9 +136,9 @@ export default function AdminUserAuditPage() {
       {/* Asset Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
-          { label: "Coffre-fort (Principal)", value: formatBSD(user?.balance || 0), icon: Shield, highlight: true },
-          { label: "Total des Cartes", value: formatBSD(totalCardBalance), icon: CreditCard },
-          { label: "Actifs Totaux", value: formatBSD(totalAssets), icon: Wallet },
+          { label: "Coffre-fort (Principal)", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), icon: Shield, highlight: true },
+          { label: "Total des Cartes", value: formatLocal(totalCardBalance, user?.currency || 'USD'), icon: CreditCard },
+          { label: "Actifs Totaux", value: formatLocal(totalAssets, user?.currency || 'USD'), icon: Wallet },
         ].map((item, i) => (
           <motion.div
             key={i}
@@ -196,7 +196,7 @@ export default function AdminUserAuditPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-slate-900">{formatBSD(card.cardBalance || 0)}</p>
+                  <p className="text-sm font-black text-slate-900">{formatLocal(card.cardBalance || 0, user?.currency || 'USD')}</p>
                   <p className="text-[10px] text-slate-400">Solde</p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function AdminUserAuditPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-black ${isCredit ? "text-emerald-600" : "text-slate-700"}`}>
-                      {isCredit ? "+" : "-"}{formatBSD(tx.amount)}
+                      {isCredit ? "+" : "-"}{formatLocal(tx.amount, tx.targetCurrency || user?.currency || 'USD')}
                     </p>
                     <span className={`text-[9px] font-bold uppercase ${tx.status === "SUCCESS" ? "text-emerald-500" : "text-red-400"}`}>
                       {tx.status}

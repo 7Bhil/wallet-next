@@ -267,8 +267,9 @@ export default function VirtualCards() {
               <div className="bg-white p-4 rounded-[20px] flex justify-between items-center shadow-sm border border-slate-50">
                 <div className="flex gap-8">
                   <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Plafond Mensuel</p>
-                    <p className="text-sm font-bold text-slate-900">{card.limit}</p>
+                    <p className="text-sm font-bold text-slate-900">
+                      {formatLocal(card.cardBalance || 0, user?.currency || 'USD')} / {formatLocal(card.limitValue || 0, user?.currency || 'USD')}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Taux d'intérêt</p>

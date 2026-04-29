@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { formatBSD } from "@/utils/currency";
+import { formatLocal, formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -123,9 +123,9 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Value Locked", value: formatBSD(stats?.totalValueLocked || 0), desc: "+12.4%", icon: Database, color: "bg-black text-white" },
+          { label: "Total Value Locked", value: formatLocal(stats?.totalValueLocked || 0, user?.currency || 'USD'), desc: "+12.4%", icon: Database, color: "bg-black text-white" },
           { label: "Active Users", value: stats?.activeUsers || "0", desc: "+4.1%", icon: Users, color: "bg-white text-slate-900" },
-          { label: "Daily Volume", value: formatBSD(stats?.dailyVolume || 0), desc: "-0.8%", icon: Activity, color: "bg-white text-slate-900" },
+          { label: "Daily Volume", value: formatLocal(stats?.dailyVolume || 0, user?.currency || 'USD'), desc: "-0.8%", icon: Activity, color: "bg-white text-slate-900" },
           { label: "System Health", value: stats?.systemHealth || "Healthy", desc: "Latency: 14ms", icon: Zap, color: "bg-white text-slate-900" },
         ].map((s, i) => (
           <motion.div 
@@ -240,8 +240,8 @@ export default function AdminDashboard() {
                            </div>
                         </td>
                         <td className="px-8 py-6">
-                           <p className="text-sm font-black text-slate-900">{formatBSD(u.balance || 0)}</p>
-                           <p className="text-[10px] text-slate-400">Wallet Balance</p>
+                           <p className="text-sm font-black text-slate-900">{formatLocal(u.balance || 0, u.currency || 'USD')}</p>
+                           <p className="text-[10px] text-slate-400">Wallet Balance ({u.currency})</p>
                         </td>
                         <td className="px-8 py-6">
                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                        <div className="flex-1 space-y-1">
                           <div className="flex justify-between items-start">
                              <p className="text-[13px] font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{t.type.replace('_', ' ')}</p>
-                             <span className="text-sm font-black text-white">{isCredit ? '+' : '-'}{formatBSD(t.amount)}</span>
+                             <span className="text-sm font-black text-white">{isCredit ? '+' : '-'}{formatLocal(t.amount, t.targetCurrency || user?.currency || 'USD')}</span>
                           </div>
                           <div className="flex justify-between items-center">
                              <p className="text-[10px] text-slate-500 font-medium">ID: {t._id.slice(-8).toUpperCase()} | {t.userId?.fullName || 'System'}</p>
