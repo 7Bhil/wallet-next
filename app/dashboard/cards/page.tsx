@@ -207,21 +207,21 @@ export default function VirtualCards() {
                   <div className="flex gap-2 items-center">
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleSetDefault(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${user?.defaultCardId === card._id ? 'bg-emerald-500 text-white' : (card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white')}`}
+                      className={`p-1.5 rounded-lg transition-colors ${user?.defaultCardId === card._id ? 'bg-emerald-500 text-white' : (card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white')}`}
                       title={user?.defaultCardId === card._id ? "Carte par défaut" : "Définir par défaut"}
                     >
                       <Star className={`w-3.5 h-3.5 ${user?.defaultCardId === card._id ? 'fill-current' : ''}`} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setTopupCardId(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
+                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'}`}
                       title="Alimenter la carte"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setDeleteId(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
+                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'}`}
                       title="Supprimer la carte"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -386,7 +386,7 @@ export default function VirtualCards() {
               </div>
 
               {/* Security Banner */}
-              <div className="bg-black rounded-[24px] p-8 text-white relative overflow-hidden">
+              <div className="bg-slate-900 rounded-[24px] p-8 text-white relative overflow-hidden">
                  <div className="relative z-10 space-y-4">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallet Shield</p>
                     <h4 className="text-lg font-bold leading-tight">Vos transactions<br />sont chiffrées 256-bit</h4>

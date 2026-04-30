@@ -88,11 +88,11 @@ export default function Dashboard() {
               </h2>
             </div>
             <div className="flex gap-2">
-              <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-[#065F46] text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-[#047857] transition-all group shadow-lg shadow-emerald-900/10">
+              <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all group shadow-lg shadow-blue-900/10">
                 <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
                 Recharger
               </Link>
-              <Link href="/dashboard/send" className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+              <Link href="/dashboard/send" className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-blue-900/10">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 Envoyer
               </Link>

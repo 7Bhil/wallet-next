@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Value Locked", value: formatLocal(stats?.totalValueLocked || 0, user?.currency || 'USD'), desc: "+12.4%", icon: Database, color: "bg-black text-white" },
+          { label: "Total Value Locked", value: formatLocal(stats?.totalValueLocked || 0, user?.currency || 'USD'), desc: "+12.4%", icon: Database, color: "bg-slate-900 text-white" },
           { label: "Active Users", value: stats?.activeUsers || "0", desc: "+4.1%", icon: Users, color: "bg-white text-slate-900" },
           { label: "Daily Volume", value: formatLocal(stats?.dailyVolume || 0, user?.currency || 'USD'), desc: "-0.8%", icon: Activity, color: "bg-white text-slate-900" },
           { label: "System Health", value: stats?.systemHealth || "Healthy", desc: "Latency: 14ms", icon: Zap, color: "bg-white text-slate-900" },
@@ -136,8 +136,8 @@ export default function AdminDashboard() {
             className={`p-8 rounded-[40px] shadow-sm border border-slate-50 flex flex-col justify-between h-[200px] ${s.color}`}
           >
             <div className="flex justify-between items-start">
-               <p className={`text-[10px] font-bold uppercase tracking-widest ${s.color === "bg-black text-white" ? "text-slate-400" : "text-slate-400"}`}>{s.label}</p>
-               <div className={`p-2 rounded-xl ${s.color === "bg-black text-white" ? "bg-white/10" : "bg-slate-50 text-slate-400"}`}>
+               <p className={`text-[10px] font-bold uppercase tracking-widest ${s.color === "bg-slate-900 text-white" ? "text-slate-400" : "text-slate-400"}`}>{s.label}</p>
+               <div className={`p-2 rounded-xl ${s.color === "bg-slate-900 text-white" ? "bg-white/10" : "bg-slate-50 text-slate-400"}`}>
                   <s.icon className="w-4 h-4" />
                </div>
             </div>

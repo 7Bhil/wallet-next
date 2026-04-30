@@ -18,6 +18,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isFormValid = formData.email && formData.password;
 
@@ -149,15 +154,15 @@ export default function Login() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading || !isFormValid}
-                  className="w-full bg-black text-white rounded-[20px] py-5 font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 hover:shadow-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none active:scale-[0.99]"
+                  disabled={!mounted || loading || !isFormValid}
+                  className="w-full bg-slate-900 text-white rounded-[20px] py-5 font-bold shadow-xl shadow-blue-900/10 hover:bg-slate-800 hover:shadow-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none active:scale-[0.99]"
                 >
                   {loading ? "Chargement..." : "Se connecter"}
                 </button>
               </div>
 
               <p className="text-center text-sm text-slate-500 pt-6">
-                Pas encore membre ? <Link href="/signup" className="text-emerald-600 font-bold cursor-pointer hover:underline">Créer un compte</Link>
+                Pas encore membre ? <Link href="/signup" className="text-blue-600 font-bold cursor-pointer hover:underline">Créer un compte</Link>
               </p>
             </form>
           </div>

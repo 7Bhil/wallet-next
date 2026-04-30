@@ -48,7 +48,7 @@ export default function Transactions() {
   const stats = [
     { label: "Cashflow Net", value: formatLocal(netCashflow, user?.currency || 'USD'), color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "Volume Total", value: formatLocal(transactions.reduce((acc, t) => acc + t.amount, 0), user?.currency || 'USD'), color: "text-slate-500", bg: "bg-slate-50" },
-    { label: "Solde Actuel", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), color: "text-white", bg: "bg-black" },
+    { label: "Solde Actuel", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), color: "text-white", bg: "bg-slate-900" },
   ];
 
   const getIcon = (type: string) => {
@@ -72,7 +72,7 @@ export default function Transactions() {
         </div>
         <div className="flex gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
            {["All", "In", "Out"].map(tab => (
-             <button key={tab} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${tab === "All" ? "bg-black text-white" : "text-slate-400 hover:text-slate-900"}`}>
+             <button key={tab} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${tab === "All" ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"}`}>
                 {tab}
              </button>
            ))}

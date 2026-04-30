@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const unreadCount = persistentNotifications.length;
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex min-h-screen bg-mesh selection:bg-blue-100 selection:text-blue-900">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -169,7 +169,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${
                   isActive 
-                    ? "bg-black text-white shadow-lg shadow-black/10" 
+                    ? "bg-slate-900 text-white shadow-lg shadow-blue-900/10" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >

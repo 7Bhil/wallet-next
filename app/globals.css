@@ -3,29 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@layer utilities {
-  @keyframes shrink {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-  }
-  .animate-shrink {
-    animation: shrink 5s linear forwards;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #F8FAFC; /* Softer, less bright than pure white */
+  --foreground: #0F172A;
+  --premium-blue: #1E293B;
+  --accent-blue: #3B82F6;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .bg-premium-blue {
+    background-color: var(--premium-blue);
+  }
+  .text-premium-blue {
+    color: var(--premium-blue);
+  }
+  .bg-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210,100%,98%,1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(220,100%,97%,1) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(230,100%,98%,1) 0, transparent 50%);
+  }
 }

@@ -30,7 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#F3F4F6] font-sans text-slate-900">
+      <body className="min-h-full flex flex-col bg-mesh font-sans text-slate-900 border-t-[6px] border-slate-900">
         <Providers>
           {children}
         </Providers>
