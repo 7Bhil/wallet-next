@@ -154,10 +154,10 @@ export default function Login() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={!mounted || loading || !isFormValid}
-                  className="w-full bg-slate-900 text-white rounded-[20px] py-5 font-bold shadow-xl shadow-blue-900/10 hover:bg-slate-800 hover:shadow-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none active:scale-[0.99]"
+                  disabled={mounted ? (loading || !isFormValid) : true}
+                  className={`w-full bg-slate-900 text-white rounded-[20px] py-5 font-bold shadow-xl shadow-blue-900/10 hover:bg-slate-800 hover:shadow-2xl transition-all active:scale-[0.99] ${(!mounted || loading || !isFormValid) ? "opacity-50 cursor-not-allowed shadow-none" : ""}`}
                 >
-                  {loading ? "Chargement..." : "Se connecter"}
+                  {mounted && loading ? "Chargement..." : "Se connecter"}
                 </button>
               </div>
 
