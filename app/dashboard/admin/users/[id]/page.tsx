@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "@/utils/api";
 import { useRouter, useParams } from "next/navigation";
 import { formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
@@ -31,13 +31,8 @@ export default function AdminUserAuditPage() {
   const [toggling, setToggling] = useState(false);
 
   const fetchUserDetails = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/admin/users/${userId}`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch user details", err);
@@ -53,13 +48,8 @@ export default function AdminUserAuditPage() {
   const handleToggleStatus = async () => {
     if (!data?.user) return;
     setToggling(true);
-    const token = localStorage.getItem("token");
     try {
-      await axios.patch(
-        `http://localhost:5000/admin/users/${userId}/toggle-status`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch(`/admin/users/${userId}/toggle-status`);
       await fetchUserDetails();
     } catch (err) {
       console.error("Toggle failed", err);
@@ -110,7 +100,7 @@ export default function AdminUserAuditPage() {
               <h1 className="text-3xl font-black text-slate-900 tracking-tight">{user?.fullName}</h1>
               <p className="text-sm text-slate-400 font-medium">{user?.email}</p>
             </div>
-            <span className={`ml-2 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${isBlocked ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
+            <span className={`ml-2 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${isBlocked ? "bg-red-50 text-red-600" : "bg-[var(--accent-soft)] text-[var(--accent)]"}`}>
               {user?.status}
             </span>
           </div>
@@ -123,7 +113,7 @@ export default function AdminUserAuditPage() {
             disabled={toggling}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all ${
               isBlocked
-                ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
+                ? "bg-[var(--accent)] text-white hover:bg-[var(--accent)] shadow-lg shadow-[var(--accent)]/10"
                 : "bg-red-50 text-red-600 border border-red-100 hover:bg-red-100"
             }`}
           >
@@ -190,7 +180,7 @@ export default function AdminUserAuditPage() {
                       {card.isFrozen ? (
                         <span className="text-red-400">Gelée</span>
                       ) : (
-                        <span className="text-emerald-500">Active</span>
+                        <span className="text-[var(--accent)]">Active</span>
                       )}
                     </p>
                   </div>
@@ -223,7 +213,7 @@ export default function AdminUserAuditPage() {
               return (
                 <div key={tx._id} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCredit ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-400"}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-50 text-slate-400"}`}>
                       {isCredit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                     </div>
                     <div>
@@ -234,10 +224,10 @@ export default function AdminUserAuditPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-black ${isCredit ? "text-emerald-600" : "text-slate-700"}`}>
+                    <p className={`text-sm font-black ${isCredit ? "text-[var(--accent)]" : "text-slate-700"}`}>
                       {isCredit ? "+" : "-"}{formatLocal(tx.amount, tx.targetCurrency || user?.currency || 'USD')}
                     </p>
-                    <span className={`text-[9px] font-bold uppercase ${tx.status === "SUCCESS" ? "text-emerald-500" : "text-red-400"}`}>
+                    <span className={`text-[9px] font-bold uppercase ${tx.status === "SUCCESS" ? "text-[var(--accent)]" : "text-red-400"}`}>
                       {tx.status}
                     </span>
                   </div>

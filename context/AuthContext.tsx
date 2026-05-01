@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
+import api from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -56,15 +57,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await axios.get("http://localhost:5000/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get("/auth/me");
       setUser(response.data);
       initSocket(token);
 
       // Fetch real-time currency rates
       try {
-        const ratesRes = await axios.get("http://localhost:5000/currency/rates");
+        const ratesRes = await api.get("/currency/rates");
         updateRates(ratesRes.data.toBSD, ratesRes.data.fromBSD);
       } catch (e) {
         console.warn("Could not fetch real-time rates", e);
@@ -106,23 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Global interceptor for 401 handling
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response && error.response.status === 401) {
-          // If not already on login page, force logout
-          if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
-            logout();
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-
     fetchUser();
     return () => {
-      axios.interceptors.response.eject(interceptor);
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;

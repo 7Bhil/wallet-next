@@ -19,7 +19,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatBSD, formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
@@ -36,31 +36,27 @@ export default function VirtualCards() {
   const [isTopupLoading, setIsTopupLoading] = useState(false);
   const [topupFeedback, setTopupFeedback] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [loadingTxn, setLoadingTxn] = useState(true);
+   const [loadingTxn, setLoadingTxn] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
   const handleSetDefault = async (cardId: string) => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.patch(`http://localhost:5000/cards/${cardId}/default`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.patch(`/cards/${cardId}/default`);
       await refreshUser();
     } catch (e) {
       console.error("Error setting default card", e);
     }
   };
 
-  React.useEffect(() => {
+   React.useEffect(() => {
+    setIsClient(true);
     fetchCards();
     fetchTransactions();
   }, []);
 
   const fetchCards = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/cards/my", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get("/cards/my");
       setCards(res.data);
     } catch (e) {
       console.error("Error fetching cards", e);
@@ -72,10 +68,7 @@ export default function VirtualCards() {
     setIsCreating(true);
     setShowSelector(false);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/cards", { type }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post("/cards", { type });
       await fetchCards();
     } catch (e) {
       console.error("Error creating card", e);
@@ -87,10 +80,7 @@ export default function VirtualCards() {
   const deleteCard = async () => {
     if (!deleteId) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/cards/${deleteId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/cards/${deleteId}`);
       await fetchCards();
       setDeleteId(null);
     } catch (e) {
@@ -103,11 +93,7 @@ export default function VirtualCards() {
     setIsTopupLoading(true);
     setTopupFeedback(null);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/cards/${topupCardId}/topup`, 
-        { amount: parseFloat(topupAmount) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/cards/${topupCardId}/topup`, { amount: parseFloat(topupAmount) });
       await fetchCards();
       await refreshUser();
       setTopupCardId(null);
@@ -123,10 +109,7 @@ export default function VirtualCards() {
   const fetchTransactions = async () => {
     setLoadingTxn(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/transactions/my", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get("/transactions/my");
       setTransactions(res.data.slice(0, 5));
     } catch (e) {
       console.error("Error fetching transactions", e);
@@ -139,13 +122,8 @@ export default function VirtualCards() {
     const newFreeze = !freezeAll;
     setFreezeAll(newFreeze);
     try {
-      const token = localStorage.getItem("token");
       await Promise.all(
-        cards.map(card =>
-          axios.patch(`http://localhost:5000/cards/${card._id}/freeze`, {}, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        )
+        cards.map(card => api.patch(`/cards/${card._id}/freeze`))
       );
       await fetchCards();
     } catch (e) {
@@ -154,6 +132,7 @@ export default function VirtualCards() {
     }
   };
 
+  if (!isClient) return null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 py-6">
@@ -163,12 +142,12 @@ export default function VirtualCards() {
           <p className="text-sm text-slate-500 max-w-md">
             Gérez vos actifs numériques avec la sécurité Wallet. Génération instantanée, contrôle total.
           </p>
-          {user?.defaultCardId && <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full w-fit mt-2 border border-emerald-100 italic">Réception automatique activée sur une carte</p>}
+          {user?.defaultCardId && <p className="text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest bg-[var(--accent-soft)] px-3 py-1 rounded-full w-fit mt-2 border border-[var(--accent)]/20 italic">Réception automatique activée sur une carte</p>}
         </div>
         <button 
           onClick={() => setShowSelector(true)}
           disabled={isCreating || cards.length >= 3}
-          className="flex items-center justify-center gap-2 bg-[#065F46] text-white px-6 py-4 rounded-2xl font-bold hover:bg-[#047857] transition-all group shadow-xl shadow-emerald-900/10 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 bg-[var(--accent)] text-white px-6 py-4 rounded-2xl font-bold hover:bg-[var(--accent-hover)] transition-all group shadow-xl shadow-[var(--accent)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus className={`w-5 h-5 transition-transform ${isCreating ? "animate-spin" : "group-hover:rotate-90"}`} />
           {isCreating ? "Génération..." : "Nouvelle Carte"}
@@ -185,21 +164,23 @@ export default function VirtualCards() {
           </div>
         )}
         {cards.map((card) => {
-          // Robust fallback for colors if data is legacy or missing
-          const cardColor = card.color || (card.type === 'STANDARD' ? 'from-white to-slate-50' : card.type === 'PREMIUM' ? 'from-blue-600 to-blue-900' : 'from-slate-800 to-slate-950');
-          const cardTextColor = card.text || (card.type === 'STANDARD' ? 'text-slate-900' : 'text-white');
+          // Robust fallback: Force new colors if card has legacy tailwind gradients or missing color
+          const isLegacy = !card.color || card.color.startsWith('from-');
+          const cardColor = isLegacy ? (card.type === 'STANDARD' ? 'card-premium-blue' : card.type === 'PREMIUM' ? 'card-lustrous-gold' : 'card-glossy-black') : card.color;
+          const cardTextColor = isLegacy ? (card.type === 'STANDARD' ? 'text-white' : card.type === 'PREMIUM' ? 'text-amber-950' : 'text-white') : card.text;
           
           return (
             <div key={card._id} className="space-y-4">
               <motion.div 
                 whileHover={{ y: -5 }}
-                className={`aspect-[1.58/1] rounded-[24px] p-6 shadow-xl relative overflow-hidden flex flex-col justify-between bg-gradient-to-br ${cardColor} ${cardTextColor} ${card.border || ""}`}
+                className={`aspect-[1.58/1] rounded-[24px] p-6 shadow-xl relative overflow-hidden flex flex-col justify-between ${cardColor} ${cardTextColor} ${card.border || ""}`}
               >
+                {card.type === 'VIP MEMBER' && <div className="glossy-reflection" />}
                 <div className="relative z-10 flex justify-between items-start">
                   <div className="space-y-1">
                     <p className={`text-[10px] font-black uppercase tracking-[0.2em] opacity-60 ${card.type === 'STANDARD' ? 'text-slate-900' : 'text-white'}`}>{card.name}</p>
                     {user?.defaultCardId === card._id && (
-                      <div className="bg-emerald-500 text-[8px] font-black text-white px-2 py-0.5 rounded-full w-fit tracking-widest flex items-center gap-1 shadow-sm">
+                      <div className="bg-[var(--accent-soft)]0 text-[8px] font-black text-white px-2 py-0.5 rounded-full w-fit tracking-widest flex items-center gap-1 shadow-sm">
                           <CheckCircle2 className="w-2.5 h-2.5" /> RÉCEPTION PAR DÉFAUT
                       </div>
                     )}
@@ -207,30 +188,26 @@ export default function VirtualCards() {
                   <div className="flex gap-2 items-center">
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleSetDefault(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${user?.defaultCardId === card._id ? 'bg-emerald-500 text-white' : (card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white')}`}
+                      className={`p-1.5 rounded-lg transition-colors ${user?.defaultCardId === card._id ? 'bg-[var(--accent-soft)]0 text-white' : 'bg-black/10 hover:bg-black/20 text-white/70 hover:text-white'}`}
                       title={user?.defaultCardId === card._id ? "Carte par défaut" : "Définir par défaut"}
                     >
                       <Star className={`w-3.5 h-3.5 ${user?.defaultCardId === card._id ? 'fill-current' : ''}`} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setTopupCardId(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'}`}
+                      className="p-1.5 rounded-lg transition-colors bg-black/10 hover:bg-black/20 text-white/70 hover:text-white"
                       title="Alimenter la carte"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setDeleteId(card._id); }}
-                      className={`p-1.5 rounded-lg transition-colors ${card.type === 'STANDARD' ? 'bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-900' : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'}`}
+                      className="p-1.5 rounded-lg transition-colors bg-black/10 hover:bg-black/20 text-white/70 hover:text-white"
                       title="Supprimer la carte"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    {card.type === "STANDARD" ? (
-                      <CreditCard className="w-5 h-5 text-slate-300" />
-                    ) : (
-                       <Wifi className="w-5 h-5 rotate-90 opacity-50" />
-                    )}
+                    <Wifi className="w-5 h-5 rotate-90 opacity-50" />
                   </div>
                 </div>
 
@@ -260,7 +237,7 @@ export default function VirtualCards() {
                 </div>
                 
                 {/* Background Glow */}
-                {card.type === "VIP MEMBER" && <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-blue-500/10 rounded-full blur-[60px]" />}
+                {card.type === "VIP MEMBER" && <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-[var(--nav-active)]0/10 rounded-full blur-[60px]" />}
                 {card.type === "PREMIUM" && <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-white/5 rounded-full blur-[60px]" />}
               </motion.div>
 
@@ -273,10 +250,10 @@ export default function VirtualCards() {
                   </div>
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Taux d'intérêt</p>
-                    <p className="text-sm font-bold text-emerald-600">{card.interestRate || 0}%</p>
+                    <p className="text-sm font-bold text-[var(--accent)]">{card.interestRate || 0}%</p>
                   </div>
                 </div>
-                <span className={`text-[9px] font-bold px-2 py-1 rounded-md ${card.status === "ACTIVE" ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>
+                <span className={`text-[9px] font-bold px-2 py-1 rounded-md ${card.status === "ACTIVE" ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-red-50 text-red-600"}`}>
                   {card.status}
                 </span>
               </div>
@@ -286,8 +263,8 @@ export default function VirtualCards() {
 
         {/* Create New Card Dash */}
         {cards.length < 3 && (
-          <button onClick={() => setShowSelector(true)} className="aspect-[1.58/1] rounded-[24px] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group hover:border-emerald-600/50 hover:bg-emerald-50/10 transition-all">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all text-slate-400">
+          <button onClick={() => setShowSelector(true)} className="aspect-[1.58/1] rounded-[24px] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group hover:border-[var(--accent)]/50 hover:bg-[var(--accent-soft)]/10 transition-all">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-[var(--accent-soft)] group-hover:text-[var(--accent)] transition-all text-slate-400">
                <Plus className="w-6 h-6" />
             </div>
             <div className="text-center px-6">
@@ -303,7 +280,7 @@ export default function VirtualCards() {
         <div className="lg:col-span-8 space-y-5">
            <div className="flex justify-between items-end">
               <h3 className="text-xl font-bold text-slate-900 tracking-tight">Activité Récente</h3>
-              <button className="text-emerald-700 font-bold text-xs hover:underline">Voir tout</button>
+              <button className="text-[var(--accent)] font-bold text-xs hover:underline">Voir tout</button>
            </div>
 
            <div className="space-y-3">
@@ -322,7 +299,7 @@ export default function VirtualCards() {
                return (
                  <div key={t._id} className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-slate-50/50">
                     <div className="flex items-center gap-4">
-                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isCredit ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"}`}>
+                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-100 text-slate-600"}`}>
                           <Icon className="w-5 h-5" />
                        </div>
                        <div>
@@ -333,10 +310,10 @@ export default function VirtualCards() {
                        </div>
                     </div>
                     <div className="flex items-center gap-4">
-                       <p className={`text-[15px] font-bold ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
+                       <p className={`text-[15px] font-bold ${isCredit ? "text-[var(--accent)]" : "text-slate-900"}`}>
                          {isCredit ? "+" : "-"}{formatLocal(Math.abs(t.amount), user?.currency || 'USD')}
                        </p>
-                       <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">{t.status}</span>
+                       <span className="text-[8px] font-bold text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded-sm">{t.status}</span>
                     </div>
                  </div>
                );
@@ -361,7 +338,7 @@ export default function VirtualCards() {
                  <button
                   onClick={toggleFreezeAll}
                   disabled={cards.length === 0}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors disabled:opacity-40 ${freezeAll ? "bg-emerald-600" : "bg-slate-200"}`}
+                  className={`w-10 h-6 rounded-full p-1 transition-colors disabled:opacity-40 ${freezeAll ? "bg-[var(--accent)]" : "bg-slate-200"}`}
                  >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${freezeAll ? "translate-x-4" : "translate-x-0"}`} />
                  </button>
@@ -379,18 +356,18 @@ export default function VirtualCards() {
                  </div>
                  <button 
                   onClick={() => setPrivacyMode(!privacyMode)}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors ${privacyMode ? "bg-emerald-600" : "bg-slate-200"}`}
+                  className={`w-10 h-6 rounded-full p-1 transition-colors ${privacyMode ? "bg-[var(--accent)]" : "bg-slate-200"}`}
                  >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${privacyMode ? "translate-x-4" : "translate-x-0"}`} />
                  </button>
               </div>
 
               {/* Security Banner */}
-              <div className="bg-slate-900 rounded-[24px] p-8 text-white relative overflow-hidden">
+              <div className="bg-black rounded-[24px] p-8 text-white relative overflow-hidden">
                  <div className="relative z-10 space-y-4">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallet Shield</p>
                     <h4 className="text-lg font-bold leading-tight">Vos transactions<br />sont chiffrées 256-bit</h4>
-                    <div className="flex items-center gap-2 text-emerald-400">
+                    <div className="flex items-center gap-2 text-[var(--accent)]">
                       <ShieldCheck className="w-4 h-4" />
                       <p className="text-[10px] font-bold uppercase tracking-widest">Sécurité maximale</p>
                     </div>
@@ -398,7 +375,7 @@ export default function VirtualCards() {
                  <div className="absolute right-[-10px] bottom-[-20px] opacity-10">
                     <div className="w-28 h-28 border-[12px] border-white rounded-3xl" />
                  </div>
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-[var(--accent-soft)]0/10 rounded-full blur-3xl pointer-events-none" />
               </div>
            </div>
         </div>
@@ -479,40 +456,41 @@ export default function VirtualCards() {
                 {[
                   { 
                     type: 'STANDARD', 
-                    name: 'Everyday Virtual', 
-                    limitValue: 5000, 
+                    name: 'Everyday Blue', 
+                    limitValue: 100000, 
                     rate: '5%', 
-                    color: 'from-white to-slate-100', 
-                    text: 'text-slate-900',
-                    desc: 'Idéal pour vos dépenses quotidiennes sécurisées.'
+                    color: 'card-premium-blue', 
+                    text: 'text-white',
+                    desc: 'L\'élégance du bleu premium pour vos dépenses quotidiennes.'
                   },
                   { 
                     type: 'PREMIUM', 
-                    name: 'Sky Digital', 
-                    limitValue: 25000, 
+                    name: 'Gold Horizon', 
+                    limitValue: 1000000, 
                     rate: '12%', 
-                    color: 'from-blue-600 to-blue-900', 
-                    text: 'text-white',
-                    desc: 'Liberté accrue et plafonds élevés pour voyageurs.'
+                    color: 'card-lustrous-gold', 
+                    text: 'text-amber-950',
+                    desc: 'Un éclat doré pour une liberté financière accrue.'
                   },
                   { 
                     type: 'VIP MEMBER', 
-                    name: 'The Fluid Black', 
-                    limitValue: 100000, 
+                    name: 'Obsidian Black', 
+                    limitValue: 30000000, 
                     rate: '18%', 
-                    color: 'from-slate-800 to-slate-950', 
+                    color: 'card-glossy-black', 
                     text: 'text-white',
-                    desc: 'Le summum de l\'exclusivité Wallet Platinum.'
+                    desc: 'Le noir absolu pour une exclusivité sans compromis.'
                   }
                 ].map((tier) => (
                   <motion.div 
                     key={tier.type}
                     whileHover={{ y: -8 }}
                     onClick={() => createCard(tier.type)}
-                    className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 cursor-pointer group hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-900/5 transition-all flex flex-col justify-between"
+                    className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 cursor-pointer group hover:border-[var(--accent)] hover:shadow-xl hover:shadow-[var(--accent)]/10 transition-all flex flex-col justify-between"
                   >
                     <div>
-                      <div className={`aspect-[1.58/1] rounded-2xl mb-6 bg-gradient-to-br ${tier.color} ${tier.text} p-4 flex flex-col justify-between shadow-md`}>
+                      <div className={`aspect-[1.58/1] rounded-2xl mb-6 ${tier.color} ${tier.text} p-4 flex flex-col justify-between shadow-md relative overflow-hidden`}>
+                        {tier.type === 'VIP MEMBER' && <div className="glossy-reflection" />}
                         <p className="text-[8px] font-bold opacity-50 uppercase tracking-widest">{tier.type}</p>
                         <div className="flex justify-between items-end">
                            <div className="text-[10px] font-mono tracking-widest opacity-80">•••• 8888</div>
@@ -530,13 +508,13 @@ export default function VirtualCards() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Taux d'intérêt</span>
-                        <span className="text-sm font-black text-emerald-600">{tier.rate}</span>
+                        <span className="text-sm font-black text-[var(--accent)]">{tier.rate}</span>
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              <div className="absolute bottom-[-10%] right-[-5%] w-60 h-60 bg-emerald-500/5 rounded-full blur-[100px]" />
+              <div className="absolute bottom-[-10%] right-[-5%] w-60 h-60 bg-[var(--accent-soft)]0/5 rounded-full blur-[100px]" />
             </motion.div>
           </div>
         )}
@@ -559,7 +537,7 @@ export default function VirtualCards() {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="w-full max-w-sm bg-white rounded-[32px] p-8 shadow-2xl relative z-10 overflow-hidden"
             >
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-6">
+              <div className="w-16 h-16 bg-[var(--accent-soft)] rounded-2xl flex items-center justify-center text-[var(--accent)] mb-6">
                  <ShieldCheck className="w-8 h-8" />
               </div>
               <h4 className="text-xl font-black text-slate-900 mb-2">Alimenter la carte</h4>
@@ -583,7 +561,7 @@ export default function VirtualCards() {
                     onChange={(e) => setTopupAmount(e.target.value)}
                     placeholder="0.00"
                     autoFocus
-                    className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-16 py-4 text-slate-900 font-bold outline-none transition-all"
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-16 py-4 text-slate-900 font-bold outline-none transition-all"
                    />
                 </div>
                 <div className="flex gap-2">
@@ -609,7 +587,7 @@ export default function VirtualCards() {
                 <button 
                   onClick={handleTopupCard}
                   disabled={isTopupLoading || !topupAmount || parseFloat(topupAmount) <= 0}
-                  className="flex-1 py-4 rounded-2xl bg-[#065F46] text-white font-bold text-sm hover:bg-[#047857] transition-all shadow-lg shadow-emerald-200 disabled:opacity-50"
+                  className="flex-1 py-4 rounded-2xl bg-[var(--accent)] text-white font-bold text-sm hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent)]/10 disabled:opacity-50"
                 >
                   {isTopupLoading ? "En cours…" : "Confirmer"}
                 </button>

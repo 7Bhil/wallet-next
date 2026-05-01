@@ -3,30 +3,163 @@
 @tailwind utilities;
 
 :root {
-  --background: #F8FAFC; /* Softer, less bright than pure white */
-  --foreground: #0F172A;
-  --premium-blue: #1E293B;
-  --accent-blue: #3B82F6;
+  /* Dark Luxury – DEFAULT */
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --card-bg: #111111;
+  --card-border: #1e1e1e;
+  --sidebar-bg: #0a0a0a;
+  --nav-active: #1a1a1a;
+  --muted: #666666;
+  --accent: #E8B800;
+  --accent-soft: rgba(232, 184, 0, 0.12);
+  --accent-hover: #FFD000;
+  --surface: #161616;
+}
+
+[data-theme='light'] {
+  /* Light Mode */
+  --background: #f5f5f0;
+  --foreground: #0d0d0d;
+  --card-bg: #ffffff;
+  --card-border: #e5e5e5;
+  --sidebar-bg: #ffffff;
+  --nav-active: #f0f0f0;
+  --muted: #6b7280;
+  --accent: #b8960c;
+  --accent-soft: rgba(184, 150, 12, 0.08);
+  --accent-hover: #d4af37;
+  --surface: #fafafa;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: 'Outfit', Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@layer utilities {
-  .bg-premium-blue {
-    background-color: var(--premium-blue);
+/* ================================================ */
+/* GLOBAL CLASS OVERRIDES — Dark-first theme mapping */
+/* These ensure ALL pages respect the theme without  */
+/* needing to edit every individual component.       */
+/* ================================================ */
+
+/* Backgrounds */
+.bg-white            { background-color: var(--card-bg)    !important; }
+.bg-slate-50         { background-color: var(--surface)    !important; }
+.bg-slate-100        { background-color: var(--nav-active) !important; }
+.bg-slate-200        { background-color: var(--card-border)!important; }
+.bg-gray-50          { background-color: var(--surface)    !important; }
+.bg-gray-100         { background-color: var(--nav-active) !important; }
+
+/* Text */
+.text-slate-900      { color: var(--foreground) !important; }
+.text-slate-800      { color: var(--foreground) !important; }
+.text-slate-700      { color: var(--foreground) !important; }
+.text-slate-600      { color: var(--muted)      !important; }
+.text-slate-500      { color: var(--muted)      !important; }
+.text-slate-400      { color: var(--muted)      !important; }
+.text-gray-900       { color: var(--foreground) !important; }
+.text-gray-700       { color: var(--muted)      !important; }
+.text-gray-500       { color: var(--muted)      !important; }
+
+/* Borders */
+.border-slate-50     { border-color: var(--card-border) !important; }
+.border-slate-100    { border-color: var(--card-border) !important; }
+.border-slate-200    { border-color: var(--card-border) !important; }
+.border-gray-100     { border-color: var(--card-border) !important; }
+.border-gray-200     { border-color: var(--card-border) !important; }
+
+/* Inputs & selects */
+input:not([type="range"]),
+select,
+textarea {
+  background-color: var(--card-bg)     !important;
+  color:            var(--foreground)  !important;
+  border-color:     var(--card-border) !important;
+}
+input::placeholder, textarea::placeholder { color: var(--muted) !important; }
+select option { background-color: var(--card-bg); color: var(--foreground); }
+
+/* Divide lines */
+.divide-slate-100 > * + * { border-color: var(--card-border) !important; }
+.divide-slate-50  > * + * { border-color: var(--card-border) !important; }
+
+/* ===================== */
+/* CARD THEMES           */
+/* ===================== */
+@layer components {
+  /* Premium Blue: deep sapphire */
+  .card-premium-blue {
+    background: linear-gradient(135deg, #0047FF 0%, #0029BB 50%, #001A7A 100%);
+    box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.08), 0 20px 40px rgba(0, 71, 255, 0.15);
+    position: relative;
+    overflow: hidden;
   }
-  .text-premium-blue {
-    color: var(--premium-blue);
+  .card-premium-blue::after {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
   }
-  .bg-mesh {
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(210,100%,98%,1) 0, transparent 50%), 
-      radial-gradient(at 50% 0%, hsla(220,100%,97%,1) 0, transparent 50%), 
-      radial-gradient(at 100% 0%, hsla(230,100%,98%,1) 0, transparent 50%);
+
+  /* Lustrous Gold: metallic, elegant */
+  .card-lustrous-gold {
+    background: linear-gradient(135deg, #D4AF37 0%, #F1E29E 50%, #D4AF37 100%);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2), 0 15px 35px rgba(212, 175, 55, 0.15);
+    color: #5C430D !important;
   }
+
+  /* Piano Black: glossy noir */
+  .card-glossy-black {
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    position: relative;
+    border: 1px solid #2a2a2a;
+  }
+  .card-glossy-black::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.04), transparent);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .card-glossy-black .glossy-reflection {
+    position: absolute;
+    top: -100%; left: -100%;
+    width: 300%; height: 300%;
+    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%);
+    animation: shine 8s infinite;
+    pointer-events: none;
+  }
+
+  @keyframes shine {
+    0%   { transform: translateX(-30%) translateY(-30%); }
+    100% { transform: translateX(30%) translateY(30%); }
+  }
+
+  @keyframes shrink {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+  .animate-shrink {
+    animation: shrink 5s linear forwards;
+  }
+
+  /* Gold accent utilities */
+  .text-gold { color: var(--accent); }
+  .bg-gold { background-color: var(--accent); }
+  .border-gold { border-color: var(--accent); }
+  .ring-gold { --tw-ring-color: var(--accent); }
 }

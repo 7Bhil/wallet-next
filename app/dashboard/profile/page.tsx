@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+import { useTheme } from "@/context/ThemeContext";
+import api from "@/utils/api";
+import { Moon, Sun } from "lucide-react";
 import { CURRENCY_SYMBOLS, formatLocal } from "@/utils/currency";
 
 interface ProfileItem {
@@ -31,13 +33,11 @@ interface ProfileSection {
 
 export default function Profile() {
   const { user, logout, refreshUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleCurrencyChange = async (newCurrency: string) => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.patch("http://localhost:5000/users/profile", { currency: newCurrency }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.patch("/users/profile", { currency: newCurrency });
       refreshUser();
     } catch (error) {
       console.error("Failed to update currency:", error);
@@ -60,6 +60,12 @@ export default function Profile() {
         { label: "Mot de passe", value: "••••••••", icon: Key, action: "Modifier" },
         { label: "Double authentification", value: "Désactivé", icon: Smartphone, action: "Activer" },
       ]
+    },
+    {
+      title: "Préférences",
+      items: [
+        { label: "Mode Sombre", value: theme === "dark" ? "Activé" : "Désactivé", icon: theme === "dark" ? Moon : Sun, action: "Bascule" },
+      ]
     }
   ];
 
@@ -67,7 +73,7 @@ export default function Profile() {
     <div className="max-w-7xl mx-auto py-8 lg:p-10 space-y-12">
       <div className="flex flex-col md:flex-row items-center gap-8 bg-white p-10 rounded-[48px] border border-slate-50 shadow-sm relative overflow-hidden group">
         <div className="relative">
-           <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-slate-100 flex items-center justify-center p-1.5 border-4 border-slate-50 overflow-hidden group-hover:border-emerald-500 transition-all duration-500">
+           <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-slate-100 flex items-center justify-center p-1.5 border-4 border-slate-50 overflow-hidden group-hover:border-[var(--accent)] transition-all duration-500">
              <div className="w-full h-full bg-slate-200 rounded-full flex items-center justify-center text-slate-400 text-4xl font-black italic">
                 {user?.fullName ? user.fullName.split(" ").map(n => n[0]).join("") : "??"}
              </div>
@@ -82,12 +88,12 @@ export default function Profile() {
         
         <div className="text-center md:text-left flex-1 space-y-2">
            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{user?.fullName}</h1>
-           <p className="text-sm font-bold text-emerald-600 uppercase tracking-[0.2em]">{user?.role} PRO</p>
+           <p className="text-sm font-bold text-[var(--accent)] uppercase tracking-[0.2em]">{user?.role} PRO</p>
            <p className="text-xs text-slate-400 font-medium max-w-sm">
              Gérez vos informations personnelles et configurez la sécurité de votre compte Wallet.
            </p>
         </div>
-        <div className="absolute top-[-20%] right-[-10%] w-60 h-60 bg-emerald-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-60 h-60 bg-[var(--accent-soft)]0/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -119,8 +125,17 @@ export default function Profile() {
                                )}
                             </div>
                          </div>
-                         {item.action && item.label !== "Devise de retrait" ? (
-                           <button className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline">{item.action}</button>
+                         {item.action === "Bascule" ? (
+                           <button 
+                             onClick={toggleTheme}
+                             className={`w-12 h-6 rounded-full p-1 transition-colors ${theme === "dark" ? "bg-[var(--accent-soft)]0" : "bg-slate-200"}`}
+                           >
+                             <div 
+                               className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${theme === "dark" ? "translate-x-6" : "translate-x-0"}`}
+                             />
+                           </button>
+                         ) : item.action && item.label !== "Devise de retrait" ? (
+                           <button className="text-[10px] font-black text-[var(--accent)] uppercase tracking-widest hover:underline">{item.action}</button>
                          ) : item.label !== "Devise de retrait" && (
                            <ChevronRight className="w-4 h-4 text-slate-200" />
                          )}
@@ -146,11 +161,11 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden group">
+            <div className="bg-black rounded-[32px] p-8 text-white relative overflow-hidden group">
                <h4 className="text-sm font-bold mb-4">Besoin d'aide ?</h4>
                <p className="text-xs text-slate-400 leading-relaxed mb-6">Notre support VIP est disponible 24/7 pour nos membres Premium.</p>
                <button className="w-full bg-white text-black py-3 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all relative z-10">Contacter Wallet</button>
-               <div className="absolute bottom-[-20%] left-[-10%] w-32 h-32 bg-blue-500/20 rounded-full blur-[60px]" />
+               <div className="absolute bottom-[-20%] left-[-10%] w-32 h-32 bg-[var(--accent-soft)]0/20 rounded-full blur-[60px]" />
             </div>
 
             <div className="bg-[#FEF2F2] rounded-[32px] p-8 border border-red-50">

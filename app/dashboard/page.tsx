@@ -15,7 +15,7 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatBSD, formatLocal } from "@/utils/currency";
 
 export default function Dashboard() {
@@ -27,12 +27,9 @@ export default function Dashboard() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-        
         const [txnRes, cardRes] = await Promise.all([
-          axios.get("http://localhost:5000/transactions/my", { headers }),
-          axios.get("http://localhost:5000/cards/my", { headers })
+          api.get("/transactions/my"),
+          api.get("/cards/my")
         ]);
         
         setTransactions(txnRes.data.slice(0, 3));
@@ -66,11 +63,11 @@ export default function Dashboard() {
 
   const getColor = (type: string) => {
     switch (type) {
-      case 'TOPUP': return "bg-emerald-50";
+      case 'TOPUP': return "bg-[var(--accent-soft)]";
       case 'PAYMENT': return "bg-slate-100";
       case 'FEE': return "bg-orange-50";
-      case 'TRANSFER_IN': return "bg-emerald-50";
-      case 'CRYPTO_BUY': return "bg-blue-50";
+      case 'TRANSFER_IN': return "bg-[var(--accent-soft)]";
+      case 'CRYPTO_BUY': return "bg-[var(--nav-active)]";
       default: return "bg-slate-50";
     }
   };
@@ -79,20 +76,20 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Balance Section */}
-        <div className="lg:col-span-8 bg-white border border-slate-100 rounded-[32px] p-8 flex flex-col justify-between shadow-sm">
+        <div className="lg:col-span-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[32px] p-8 flex flex-col justify-between shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Solde Disponible ({userCurrency})</p>
-              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
+              <h2 className="text-4xl sm:text-5xl font-black text-[var(--foreground)] tracking-tight leading-none">
                 {formatLocal(totalFiat, userCurrency)}
               </h2>
             </div>
             <div className="flex gap-2">
-              <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all group shadow-lg shadow-blue-900/10">
+              <Link href="/dashboard/topup" className="flex items-center justify-center gap-2 bg-[var(--accent)] text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-[var(--accent-hover)] transition-all group shadow-lg shadow-[var(--accent)]/10">
                 <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
                 Recharger
               </Link>
-              <Link href="/dashboard/send" className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-blue-900/10">
+              <Link href="/dashboard/send" className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 Envoyer
               </Link>
@@ -104,80 +101,107 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-4">
                {/* Crypto Wallet (B$) */}
                <div className="bg-[#1e293b] p-4 rounded-2xl min-w-[160px] flex-1 border border-slate-800 shadow-xl">
-                  <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                     <div className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center text-[10px] font-bold italic text-emerald-400">B</div>
+                  <div className="flex items-center gap-2 text-[var(--accent)] mb-2">
+                     <div className="w-4 h-4 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-[10px] font-bold italic text-[var(--accent)]">B</div>
                      <span className="text-[9px] font-black uppercase tracking-tighter">Crypto Wallet</span>
                   </div>
                   <p className="text-lg font-black text-white">{formatBSD(user?.cryptoBalance || 0)}</p>
                </div>
 
                {/* Vault Wallet (Local) */}
-               <div className="bg-[#F1F4FF] p-4 rounded-2xl min-w-[160px] flex-1 border border-[#E0E7FF]">
-                  <div className="flex items-center gap-2 text-[#4F6DFF] mb-2">
+               <div className="bg-[var(--accent-soft)] p-4 rounded-2xl min-w-[160px] flex-1 border border-[var(--card-border)] shadow-sm">
+                  <div className="flex items-center gap-2 text-[var(--accent)] mb-2">
                      <ShieldCheck className="w-4 h-4" />
                      <span className="text-[9px] font-black uppercase tracking-tighter">Coffre-fort ({userCurrency})</span>
                   </div>
-                  <p className="text-lg font-black text-slate-900">{formatLocal(vaultFiat, userCurrency)}</p>
+                  <p className="text-lg font-black text-[var(--foreground)]">{formatLocal(vaultFiat, userCurrency)}</p>
                </div>
 
                {/* Card Wallets */}
                {cards.map(card => (
-                 <div key={card._id} className="bg-slate-50 p-4 rounded-2xl min-w-[160px] flex-1 border border-slate-100/50">
+                 <div key={card._id} className="bg-[var(--nav-active)] p-4 rounded-2xl min-w-[160px] flex-1 border border-[var(--card-border)]">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
                        <CardIcon className="w-4 h-4" />
                        <span className="text-[9px] font-black uppercase tracking-tighter truncate max-w-[100px]">{card.name}</span>
                     </div>
-                    <p className="text-lg font-black text-slate-900">{formatLocal(card.cardBalance || 0, userCurrency)}</p>
+                    <p className="text-lg font-black text-[var(--foreground)]">{formatLocal(card.cardBalance || 0, userCurrency)}</p>
                  </div>
                ))}
             </div>
           </div>
         </div>
         {/* ... Card Section stays the same ... */}
-        <motion.div 
-          whileHover={{ y: -5 }}
-          className="lg:col-span-4 bg-[#0F172A] rounded-[32px] p-8 text-white relative overflow-hidden flex flex-col justify-between aspect-square lg:aspect-auto"
-        >
-          {/* Active Card content remains */}
-          <div className="relative z-10 flex justify-between items-start">
-            <div>
-              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Carte Active</p>
-              <h3 className="text-xl font-bold">Premium</h3>
-              <p className="text-[9px] font-bold text-emerald-400 uppercase mt-0.5">(3% frais)</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center backdrop-blur-sm border border-white/10">
-              <Wifi className="w-5 h-5 rotate-90 text-slate-400" />
-            </div>
-          </div>
+        {/* Featured Card */}
+        {(() => {
+          const defaultCard = cards.find(c => c._id === user?.defaultCardId) || cards[0];
+          const hasCard = !!defaultCard;
+          
+          const isLegacy = hasCard && (!defaultCard.color || defaultCard.color.startsWith('from-'));
+          const cardColor = hasCard 
+            ? (isLegacy ? (defaultCard.type === 'STANDARD' ? 'card-premium-blue' : defaultCard.type === 'PREMIUM' ? 'card-lustrous-gold' : 'card-glossy-black') : defaultCard.color)
+            : 'card-glossy-black';
+          
+          const cardTextColor = hasCard 
+            ? (isLegacy ? (defaultCard.type === 'PREMIUM' ? 'text-amber-950' : 'text-white') : defaultCard.text)
+            : 'text-white';
 
-          <div className="relative z-10">
-            <div className="flex gap-3 text-lg tracking-[0.2em] font-mono text-slate-300 mb-5">
-              <span>••••</span>
-              <span>••••</span>
-              <span>••••</span>
-              <span>8824</span>
-            </div>
-            <div className="flex justify-between items-end">
-              <div>
-                <p className="text-[9px] uppercase text-slate-500 font-bold mb-0.5">Exp</p>
-                <p className="text-xs font-semibold">12/26</p>
+          return (
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className={`lg:col-span-4 ${cardColor} rounded-[32px] p-8 ${cardTextColor} relative overflow-hidden flex flex-col justify-between aspect-square lg:aspect-auto shadow-xl`}
+            >
+              {hasCard && defaultCard.type === 'VIP MEMBER' && <div className="glossy-reflection" />}
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest mb-0.5">
+                    {hasCard ? "Carte Par Défaut" : "Aucune Carte"}
+                  </p>
+                  <h3 className="text-xl font-black tracking-tight">{hasCard ? defaultCard.name : "Wallet Shield"}</h3>
+                  {hasCard && <p className="text-[9px] font-bold opacity-80 uppercase mt-0.5">{defaultCard.type}</p>}
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10">
+                  <Wifi className="w-5 h-5 rotate-90 opacity-60" />
+                </div>
               </div>
-              <div className="flex gap-1">
-                 <div className="w-5 h-5 rounded-full bg-red-500/80" />
-                 <div className="w-5 h-5 rounded-full bg-orange-400/80 -ml-2" />
+
+              <div className="relative z-10 pt-4">
+                <div className="flex gap-3 text-lg tracking-[0.2em] font-mono opacity-80 mb-5">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>{hasCard ? defaultCard.number.slice(-4) : "0000"}</span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-[9px] uppercase opacity-40 font-bold mb-0.5">Exp</p>
+                    <p className="text-xs font-semibold">{hasCard ? defaultCard.exp : "00/00"}</p>
+                  </div>
+                  {hasCard && (
+                    <div className="text-right">
+                       <p className="text-[8px] uppercase opacity-40 font-bold mb-0.5">Solde</p>
+                       <p className="text-sm font-black">{formatLocal(defaultCard.cardBalance || 0, userCurrency)}</p>
+                    </div>
+                  )}
+                  {!hasCard && (
+                    <div className="flex gap-1">
+                      <div className="w-5 h-5 rounded-full bg-slate-400/20" />
+                      <div className="w-5 h-5 rounded-full bg-slate-400/20 -ml-2" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-blue-600/10 rounded-full blur-[100px]" />
-        </motion.div>
+              <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-white/5 rounded-full blur-[100px]" />
+            </motion.div>
+          );
+        })()}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Transactions */}
         <div className="lg:col-span-8 flex flex-col gap-5">
           <div className="flex justify-between items-end mb-1">
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Dernières Transactions</h3>
-            <Link href="/dashboard/transactions" className="text-emerald-600 font-bold text-xs hover:underline">Voir tout</Link>
+            <h3 className="text-xl font-bold text-[var(--foreground)] tracking-tight">Dernières Transactions</h3>
+            <Link href="/dashboard/transactions" className="text-[var(--accent)] font-bold text-xs hover:underline">Voir tout</Link>
           </div>
           
           <div className="space-y-3">
@@ -187,21 +211,21 @@ export default function Dashboard() {
                 <motion.div 
                   key={t._id}
                   whileHover={{ x: 5 }}
-                  className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-50/50"
+                  className="bg-[var(--card-bg)] p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer border border-[var(--card-border)]/50"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-11 h-11 rounded-xl ${getColor(t.type)} flex items-center justify-center`}>
                       <Icon className="w-5 h-5 text-slate-900" />
                     </div>
                     <div>
-                      <p className="text-[13px] font-bold text-slate-900">{t.description}</p>
+                      <p className="text-[13px] font-bold text-[var(--foreground)]">{t.description}</p>
                       <p className="text-[10px] text-slate-400 font-medium">
                         {new Date(t.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} • {t.type}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold text-base ${t.type === 'TOPUP' || t.type === 'TRANSFER_IN' ? "text-emerald-600" : "text-slate-900"}`}>
+                    <p className={`font-bold text-base ${t.type === 'TOPUP' || t.type === 'TRANSFER_IN' ? "text-[var(--accent)]" : "text-slate-900"}`}>
                       {t.type === 'TOPUP' || t.type === 'TRANSFER_IN' ? "+" : "-"} {formatLocal(Math.abs(t.amount), t.targetCurrency || userCurrency)}
                     </p>
                   </div>
@@ -217,8 +241,8 @@ export default function Dashboard() {
         {/* Stats & Quick Recharge */}
         <div className="lg:col-span-4 space-y-6">
           {/* Stats Bar Chart Mockup */}
-          <div className="bg-[#E9EDFF] rounded-[32px] p-6">
-             <h4 className="text-sm font-bold text-slate-900 mb-6">Statistiques Mensuelles</h4>
+          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[32px] p-6">
+             <h4 className="text-sm font-bold text-[var(--foreground)] mb-6">Statistiques Mensuelles</h4>
              <div className="flex items-end justify-between h-20 gap-2 mb-6">
                 {[40, 65, 30, 95, 55].map((h, i) => (
                   <motion.div 
@@ -231,21 +255,21 @@ export default function Dashboard() {
              </div>
              <div className="flex justify-between items-center">
                 <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Croissance ce mois</p>
-                <p className="text-emerald-600 font-black text-base">+12.4%</p>
+                <p className="text-[var(--accent)] font-black text-base">+12.4%</p>
              </div>
           </div>
 
           {/* Quick Recharge */}
-          <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-50">
-             <h4 className="text-sm font-bold text-slate-900 mb-6">Recharge Rapide</h4>
-             <div className="bg-slate-50 p-3 rounded-xl flex items-center justify-between mb-6 group cursor-pointer hover:bg-slate-100 transition-colors">
+          <div className="bg-[var(--card-bg)] rounded-[32px] p-6 shadow-sm border border-[var(--card-border)]">
+             <h4 className="text-sm font-bold text-[var(--foreground)] mb-6">Recharge Rapide</h4>
+             <div className="bg-[var(--nav-active)] p-3 rounded-xl flex items-center justify-between mb-6 group cursor-pointer hover:bg-[var(--card-border)] transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-200" />
-                  <p className="text-[12px] font-bold text-slate-700">BNP Paribas</p>
+                  <div className="w-8 h-8 rounded-lg bg-[var(--card-border)]" />
+                  <p className="text-[12px] font-bold text-[var(--foreground)]">BNP Paribas</p>
                 </div>
-                <CheckCircle2 className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                <CheckCircle2 className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors" />
              </div>
-             <button className="w-full bg-[#065F46] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#047857] transition-all">
+             <button className="w-full bg-[var(--accent)] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[var(--accent-hover)] transition-all">
                 Recharger 500 {userCurrency}
              </button>
           </div>

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { User, Mail, Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/utils/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -17,11 +18,6 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const isFormValid = formData.fullName && formData.email && formData.password;
 
@@ -34,7 +30,7 @@ export default function Signup() {
     setLoading(true);
     setMessage("");
     try {
-      await axios.post("http://localhost:5000/auth/signup", {
+      await api.post("/auth/signup", {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
@@ -191,15 +187,15 @@ export default function Signup() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={mounted ? (loading || !isFormValid) : true}
-                  className={`w-full bg-slate-900 text-white rounded-[20px] py-5 font-bold shadow-xl shadow-blue-900/10 hover:bg-slate-800 hover:shadow-2xl transition-all active:scale-[0.99] ${(!mounted || loading || !isFormValid) ? "opacity-50 cursor-not-allowed shadow-none" : ""}`}
+                  disabled={loading || !isFormValid}
+                  className="w-full bg-black text-white rounded-[20px] py-5 font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 hover:shadow-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none active:scale-[0.99]"
                 >
-                  {mounted && loading ? "Création en cours..." : "Créer mon compte"}
+                  {loading ? "Création en cours..." : "Créer mon compte"}
                 </button>
               </div>
 
               <p className="text-center text-sm text-slate-500 pt-6">
-                Déjà membre ? <Link href="/login" className="text-blue-600 font-bold cursor-pointer hover:underline">Connectez-vous ici</Link>
+                Déjà membre ? <Link href="/login" className="text-emerald-600 font-bold cursor-pointer hover:underline">Connectez-vous ici</Link>
               </p>
             </form>
           </div>

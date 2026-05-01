@@ -20,7 +20,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatLocal, formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -37,9 +37,7 @@ export default function AdminDashboard() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = localStorage.getItem("token");
-    setToken(t);
-    fetchData(t);
+    fetchData();
     
     // Fake system logs simulation
     const initialLogs = [
@@ -51,16 +49,14 @@ export default function AdminDashboard() {
     setLogs(initialLogs);
   }, []);
 
-  const fetchData = async (t: string | null) => {
-    if (!t) return;
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const headers = { Authorization: `Bearer ${t}` };
       const [statsRes, usersRes, feedRes, ratesRes] = await Promise.all([
-        axios.get("http://localhost:5000/admin/stats", { headers }),
-        axios.get("http://localhost:5000/admin/users", { headers }),
-        axios.get("http://localhost:5000/admin/feed", { headers }),
-        axios.get("http://localhost:5000/currency/rates", { headers }),
+        api.get("/admin/stats"),
+        api.get("/admin/users"),
+        api.get("/admin/feed"),
+        api.get("/currency/rates"),
       ]);
       setStats(statsRes.data);
       setUsers(usersRes.data);
@@ -75,10 +71,9 @@ export default function AdminDashboard() {
 
   const handleToggleStatus = async (userId: string) => {
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.patch(`http://localhost:5000/admin/users/${userId}/toggle-status`, {}, { headers });
+      await api.patch(`/admin/users/${userId}/toggle-status`);
       setLogs(prev => [`[${new Date().toISOString()}] USER: Status toggled for user ${userId}`, ...prev]);
-      fetchData(token);
+      fetchData();
     } catch (err) {
       console.error("Toggle failed", err);
     }
@@ -113,9 +108,9 @@ export default function AdminDashboard() {
              <RefreshCcw className="w-4 h-4" />
           </button>
           <div className="h-10 w-px bg-slate-100 mx-2 hidden md:block" />
-          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100">
-             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-             <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Network: Live</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-soft)] rounded-2xl border border-[var(--accent)]/20">
+             <div className="w-2 h-2 bg-[var(--accent-soft)]0 rounded-full animate-pulse" />
+             <span className="text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest">Network: Live</span>
           </div>
         </div>
       </div>
@@ -123,7 +118,7 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Value Locked", value: formatLocal(stats?.totalValueLocked || 0, user?.currency || 'USD'), desc: "+12.4%", icon: Database, color: "bg-slate-900 text-white" },
+          { label: "Total Value Locked", value: formatLocal(stats?.totalValueLocked || 0, user?.currency || 'USD'), desc: "+12.4%", icon: Database, color: "bg-black text-white" },
           { label: "Active Users", value: stats?.activeUsers || "0", desc: "+4.1%", icon: Users, color: "bg-white text-slate-900" },
           { label: "Daily Volume", value: formatLocal(stats?.dailyVolume || 0, user?.currency || 'USD'), desc: "-0.8%", icon: Activity, color: "bg-white text-slate-900" },
           { label: "System Health", value: stats?.systemHealth || "Healthy", desc: "Latency: 14ms", icon: Zap, color: "bg-white text-slate-900" },
@@ -136,14 +131,14 @@ export default function AdminDashboard() {
             className={`p-8 rounded-[40px] shadow-sm border border-slate-50 flex flex-col justify-between h-[200px] ${s.color}`}
           >
             <div className="flex justify-between items-start">
-               <p className={`text-[10px] font-bold uppercase tracking-widest ${s.color === "bg-slate-900 text-white" ? "text-slate-400" : "text-slate-400"}`}>{s.label}</p>
-               <div className={`p-2 rounded-xl ${s.color === "bg-slate-900 text-white" ? "bg-white/10" : "bg-slate-50 text-slate-400"}`}>
+               <p className={`text-[10px] font-bold uppercase tracking-widest ${s.color === "bg-black text-white" ? "text-slate-400" : "text-slate-400"}`}>{s.label}</p>
+               <div className={`p-2 rounded-xl ${s.color === "bg-black text-white" ? "bg-white/10" : "bg-slate-50 text-slate-400"}`}>
                   <s.icon className="w-4 h-4" />
                </div>
             </div>
             <div className="space-y-1">
                <h3 className="text-3xl font-black tracking-tighter">{s.value}</h3>
-               <p className={`text-[11px] font-bold ${s.desc.startsWith('+') ? 'text-emerald-500' : 'text-slate-400'}`}>{s.desc}</p>
+               <p className={`text-[11px] font-bold ${s.desc.startsWith('+') ? 'text-[var(--accent)]' : 'text-slate-400'}`}>{s.desc}</p>
             </div>
           </motion.div>
         ))}
@@ -160,8 +155,8 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-black text-slate-900 leading-tight">Currency Market Monitor</h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Live exchange rates & spread analysis</p>
            </div>
-           <div className="px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100">
-              <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Platform Spread: {((ratesData?.commission || 0) * 100).toFixed(1)}%</span>
+           <div className="px-4 py-2 bg-[var(--accent-soft)] rounded-2xl border border-[var(--accent)]/20">
+              <span className="text-[9px] font-black text-[var(--accent)] uppercase tracking-widest">Platform Spread: {((ratesData?.commission || 0) * 100).toFixed(1)}%</span>
            </div>
         </div>
 
@@ -183,11 +178,11 @@ export default function AdminDashboard() {
                        <span className="text-xs font-bold text-slate-900">{realRate.toFixed(currency === 'XOF' ? 6 : 4)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                       <span className="text-[10px] font-bold text-emerald-600 uppercase">Platform Rate</span>
-                       <span className="text-xs font-black text-emerald-600">{platformRate.toFixed(currency === 'XOF' ? 6 : 4)}</span>
+                       <span className="text-[10px] font-bold text-[var(--accent)] uppercase">Platform Rate</span>
+                       <span className="text-xs font-black text-[var(--accent)]">{platformRate.toFixed(currency === 'XOF' ? 6 : 4)}</span>
                     </div>
                     <div className="h-px bg-slate-200" />
-                    <div className="flex justify-between items-center text-indigo-600">
+                    <div className="flex justify-between items-center text-[var(--accent)]">
                        <span className="text-[10px] font-bold uppercase">Our Profit</span>
                        <span className="text-xs font-black">+{profit.toFixed(currency === 'XOF' ? 6 : 4)} B$</span>
                     </div>
@@ -208,7 +203,7 @@ export default function AdminDashboard() {
                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Live management dashboard</p>
               </div>
               <div className="flex items-center gap-3">
-                 <button className="text-xs font-bold text-emerald-600 hover:underline">View All Users</button>
+                 <button className="text-xs font-bold text-[var(--accent)] hover:underline">View All Users</button>
                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
                     <Filter className="w-4 h-4" />
                  </div>
@@ -244,7 +239,7 @@ export default function AdminDashboard() {
                            <p className="text-[10px] text-slate-400">Wallet Balance ({u.currency})</p>
                         </td>
                         <td className="px-8 py-6">
-                           <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                           <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${u.status === 'ACTIVE' ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'bg-red-50 text-red-600'}`}>
                               {u.status}
                            </span>
                         </td>
@@ -270,7 +265,7 @@ export default function AdminDashboard() {
            <div className="bg-[#101827] rounded-[44px] p-8 space-y-8 min-h-[500px] relative overflow-hidden">
               <div className="flex items-center justify-between">
                  <h3 className="text-lg font-black text-white">Global Feed</h3>
-                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                 <div className="w-2 h-2 bg-[var(--accent-soft)]0 rounded-full animate-ping" />
               </div>
 
               <div className="space-y-6">
@@ -284,12 +279,12 @@ export default function AdminDashboard() {
                       transition={{ delay: i * 0.05 }}
                       className="flex gap-4 items-start group"
                     >
-                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/5 border border-white/10 ${isCredit ? 'text-emerald-500' : 'text-slate-400'}`}>
+                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/5 border border-white/10 ${isCredit ? 'text-[var(--accent)]' : 'text-slate-400'}`}>
                           {isCredit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                        </div>
                        <div className="flex-1 space-y-1">
                           <div className="flex justify-between items-start">
-                             <p className="text-[13px] font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{t.type.replace('_', ' ')}</p>
+                             <p className="text-[13px] font-bold text-white group-hover:text-[var(--accent)] transition-colors uppercase tracking-tight">{t.type.replace('_', ' ')}</p>
                              <span className="text-sm font-black text-white">{isCredit ? '+' : '-'}{formatLocal(t.amount, t.targetCurrency || user?.currency || 'USD')}</span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -311,14 +306,14 @@ export default function AdminDashboard() {
            <div className="bg-[#0A0F1B] rounded-[44px] p-1 shadow-2xl shadow-indigo-500/10 overflow-hidden">
               <div className="bg-[#101827]/40 p-6 rounded-[40px] border border-white/5 space-y-4">
                  <div className="flex items-center gap-3">
-                    <Terminal className="w-4 h-4 text-emerald-500" />
+                    <Terminal className="w-4 h-4 text-[var(--accent)]" />
                     <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">System Engine Logs</span>
                  </div>
                  <div className="h-40 overflow-y-auto space-y-2 font-mono text-[10px] custom-scrollbar pr-2">
                     {logs.map((log, i) => (
                       <div key={i} className="flex gap-3 text-white/70">
                          <span className="text-white/20">[{i}]</span>
-                         <span className={log.includes('SECURITY') ? 'text-red-400' : log.includes('AUTH') ? 'text-emerald-400' : 'text-white/60'}>
+                         <span className={log.includes('SECURITY') ? 'text-red-400' : log.includes('AUTH') ? 'text-[var(--accent)]' : 'text-white/60'}>
                             {log}
                          </span>
                       </div>
@@ -326,11 +321,11 @@ export default function AdminDashboard() {
                  </div>
                  <div className="flex items-center gap-4 pt-4 border-t border-white/5">
                     <div className="flex items-center gap-1.5">
-                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                       <div className="w-1.5 h-1.5 bg-[var(--accent-soft)]0 rounded-full" />
                        <span className="text-[8px] font-bold text-white/30 uppercase">DB Master</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                       <div className="w-1.5 h-1.5 bg-[var(--accent-soft)]0 rounded-full" />
                        <span className="text-[8px] font-bold text-white/30 uppercase">API Gateway</span>
                     </div>
                  </div>

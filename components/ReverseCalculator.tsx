@@ -77,7 +77,7 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
           </button>
           <button 
             onClick={() => setMode("SOURCE")}
-            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "SOURCE" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}`}
+            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "SOURCE" ? "bg-white text-[var(--accent)] shadow-sm" : "text-slate-400"}`}
           >
             Montant (Source)
           </button>
@@ -129,17 +129,13 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`p-6 rounded-2xl border flex items-center justify-between shadow-inner ${
-                mode === "TARGET" 
-                  ? "bg-emerald-50 border-emerald-100" 
-                  : "bg-indigo-50 border-indigo-100"
-              }`}
+              className={`p-6 rounded-2xl border flex items-center justify-between shadow-inner bg-[var(--accent-soft)] border-[var(--accent)]/20`}
             >
               <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${mode === "TARGET" ? "text-emerald-500" : "text-indigo-500"}`}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">
                   {mode === "TARGET" ? `Montant à débiter (${sourceCurrency})` : `Le destinataire recevra (${targetCurrency})`}
                 </p>
-                <p className={`text-3xl font-black tracking-tight ${mode === "TARGET" ? "text-emerald-700" : "text-indigo-700"}`}>
+                <p className="text-3xl font-black tracking-tight text-[var(--foreground)]">
                   {result.toFixed(2)} {mode === "TARGET" ? sourceCurrency : targetCurrency}
                 </p>
               </div>
@@ -147,7 +143,7 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
               {mode === "TARGET" && (
                 <button 
                   onClick={() => onCalculate?.(Number(result.toFixed(2)))}
-                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all uppercase tracking-wider shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-6 py-3 bg-[var(--accent)] text-black rounded-xl text-xs font-bold hover:bg-[var(--accent-hover)] transition-all uppercase tracking-wider shadow-lg shadow-[var(--accent)]/20 hover:-translate-y-0.5"
                 >
                   Appliquer
                 </button>
@@ -156,9 +152,9 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
           )}
         </AnimatePresence>
 
-        <div className="flex items-start gap-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
-          <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-          <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+        <div className="flex items-start gap-3 p-4 bg-[var(--nav-active)] rounded-2xl border border-[var(--card-border)]">
+          <Info className="w-4 h-4 text-[var(--muted)] shrink-0 mt-0.5" />
+          <p className="text-[10px] text-[var(--muted)] font-medium leading-relaxed">
             Note: Transfert direct de {sourceCurrency} vers {targetCurrency}. 
             Le taux inclut une commission de plateforme de {rates?.commission ? rates.commission * 100 : 2}%.
           </p>

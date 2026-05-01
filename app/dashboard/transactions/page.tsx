@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatLocal } from "@/utils/currency";
 
 export default function Transactions() {
@@ -25,10 +25,7 @@ export default function Transactions() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/transactions/my", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get("/transactions/my");
         setTransactions(response.data);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -46,9 +43,9 @@ export default function Transactions() {
   }, 0);
 
   const stats = [
-    { label: "Cashflow Net", value: formatLocal(netCashflow, user?.currency || 'USD'), color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Volume Total", value: formatLocal(transactions.reduce((acc, t) => acc + t.amount, 0), user?.currency || 'USD'), color: "text-slate-500", bg: "bg-slate-50" },
-    { label: "Solde Actuel", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), color: "text-white", bg: "bg-slate-900" },
+    { label: "Cashflow Net", value: formatLocal(netCashflow, user?.currency || 'USD'), color: "text-[var(--accent)]", bg: "bg-[var(--accent-soft)]" },
+    { label: "Volume Total", value: formatLocal(transactions.reduce((acc, t) => acc + t.amount, 0), user?.currency || 'USD'), color: "text-white", bg: "bg-slate-50" },
+    { label: "Solde Actuel", value: formatLocal(user?.balance || 0, user?.currency || 'USD'), color: "text-white", bg: "bg-black" },
   ];
 
   const getIcon = (type: string) => {
@@ -72,7 +69,7 @@ export default function Transactions() {
         </div>
         <div className="flex gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
            {["All", "In", "Out"].map(tab => (
-             <button key={tab} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${tab === "All" ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"}`}>
+             <button key={tab} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${tab === "All" ? "bg-black text-white" : "text-slate-400 hover:text-slate-900"}`}>
                 {tab}
              </button>
            ))}
@@ -108,7 +105,7 @@ export default function Transactions() {
          <div className="divide-y divide-slate-50">
             {loading ? (
               <div className="p-20 text-center text-slate-400 italic flex flex-col items-center gap-4">
-                 <div className="w-8 h-8 border-4 border-slate-100 border-t-emerald-600 rounded-full animate-spin" />
+                 <div className="w-8 h-8 border-4 border-slate-100 border-t-[var(--accent)] rounded-full animate-spin" />
                  Chargement des données sécurisées...
               </div>
             ) : transactions.map((t) => {
@@ -118,7 +115,7 @@ export default function Transactions() {
               return (
                 <div key={t._id} className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
                   <div className="flex items-center gap-5">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm ${isCredit ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-400"}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-50 text-slate-400"}`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
@@ -129,10 +126,10 @@ export default function Transactions() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold text-base ${isCredit ? "text-emerald-600" : "text-slate-900"}`}>
+                    <p className={`font-bold text-base ${isCredit ? "text-[var(--accent)]" : "text-slate-900"}`}>
                       {isCredit ? `+ ${formatLocal(t.amount, t.targetCurrency || user?.currency || 'USD')}` : `- ${formatLocal(Math.abs(t.amount), user?.currency || 'USD')}`}
                     </p>
-                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1 bg-emerald-50 px-2 py-0.5 rounded inline-block">Validé</p>
+                    <p className="text-[9px] font-black text-[var(--accent)] uppercase tracking-[0.2em] mt-1 bg-[var(--accent-soft)] px-2 py-0.5 rounded inline-block">Validé</p>
                   </div>
                 </div>
               );

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/utils/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -18,11 +19,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const isFormValid = formData.email && formData.password;
 
@@ -35,7 +31,7 @@ export default function Login() {
     setLoading(true);
     setMessage("");
     try {
-      const response = await axios.post("http://localhost:5000/auth/login", formData);
+      const response = await api.post("/auth/login", formData);
       const token = response.data.access_token;
       login(token); // Update global state
       setMessage("Connexion réussie ! Redirection...");
@@ -154,15 +150,15 @@ export default function Login() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={mounted ? (loading || !isFormValid) : true}
-                  className={`w-full bg-slate-900 text-white rounded-[20px] py-5 font-bold shadow-xl shadow-blue-900/10 hover:bg-slate-800 hover:shadow-2xl transition-all active:scale-[0.99] ${(!mounted || loading || !isFormValid) ? "opacity-50 cursor-not-allowed shadow-none" : ""}`}
+                  disabled={loading || !isFormValid}
+                  className="w-full bg-black text-white rounded-[20px] py-5 font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 hover:shadow-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none active:scale-[0.99]"
                 >
-                  {mounted && loading ? "Chargement..." : "Se connecter"}
+                  {loading ? "Chargement..." : "Se connecter"}
                 </button>
               </div>
 
               <p className="text-center text-sm text-slate-500 pt-6">
-                Pas encore membre ? <Link href="/signup" className="text-blue-600 font-bold cursor-pointer hover:underline">Créer un compte</Link>
+                Pas encore membre ? <Link href="/signup" className="text-emerald-600 font-bold cursor-pointer hover:underline">Créer un compte</Link>
               </p>
             </form>
           </div>

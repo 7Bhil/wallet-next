@@ -15,7 +15,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatLocal, formatBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
@@ -35,10 +35,7 @@ export default function AdminFinances() {
   const fetchRates = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/currency/rates", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get("/currency/rates");
       setRatesData(res.data);
     } catch (err) {
       console.error("Failed to fetch rates", err);
@@ -127,9 +124,9 @@ export default function AdminFinances() {
                        <p className="text-[10px] font-bold text-slate-400 uppercase">Valeur Réelle (Marché)</p>
                        <p className="text-2xl font-black text-slate-900">{formatLocal(totalMarketValue, 'USD')} (equiv.)</p>
                     </div>
-                    <div className="p-6 rounded-2xl bg-indigo-50/30 border border-indigo-100/50 space-y-1">
-                       <p className="text-[10px] font-bold text-indigo-400 uppercase">Attribué Utilisateur</p>
-                       <p className="text-2xl font-black text-indigo-600">{formatLocal(userReceives, 'USD')} (equiv.)</p>
+                    <div className="p-6 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent)]/20 space-y-1">
+                       <p className="text-[10px] font-bold text-[var(--accent)] uppercase">Attribué Utilisateur</p>
+                       <p className="text-2xl font-black text-[var(--accent)]">{formatLocal(userReceives, 'USD')} (equiv.)</p>
                     </div>
                  </div>
 
@@ -143,12 +140,12 @@ export default function AdminFinances() {
                        <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${(platformProfit / totalMarketValue) * 100}%` }}
-                        className="h-full bg-indigo-500" 
+                        className="h-full bg-[var(--accent-soft)]0" 
                        />
                     </div>
                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tighter">
                        <span className="text-slate-400">Utilisateur ({( (userReceives / totalMarketValue) * 100 ).toFixed(1)}%)</span>
-                       <span className="text-indigo-500">Wallet Yield ({( (platformProfit / totalMarketValue) * 100 ).toFixed(1)}%)</span>
+                       <span className="text-[var(--accent)]">Wallet Yield ({( (platformProfit / totalMarketValue) * 100 ).toFixed(1)}%)</span>
                     </div>
                  </div>
 

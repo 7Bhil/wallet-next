@@ -13,7 +13,7 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "@/utils/api";
 import { formatBSD, formatLocal } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 import ReverseCalculator from "@/components/ReverseCalculator";
@@ -48,10 +48,7 @@ export default function SendPage() {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/cards/my", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get("/cards/my");
         setCards(res.data);
         if (res.data.length >= 1) setFromCard(res.data[0]._id);
         if (res.data.length >= 2) setToCard(res.data[1]._id);
@@ -67,10 +64,7 @@ export default function SendPage() {
       if (searchQuery.length >= 2) {
         setIsSearching(true);
         try {
-          const token = localStorage.getItem("token");
-          const res = await axios.get(`http://localhost:5000/users/search?q=${searchQuery}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const res = await api.get(`/users/search?q=${searchQuery}`);
           setSearchResults(res.data);
         } catch (e) {
           console.error("Search error", e);
@@ -92,11 +86,9 @@ export default function SendPage() {
     setSendLoading(true);
     setSendFeedback(null);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/transactions/transfer",
-        { recipientEmail, amount: parseFloat(sendAmount), note: sendNote },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.post(
+        "/transactions/transfer",
+        { recipientEmail, amount: parseFloat(sendAmount), note: sendNote }
       );
       await refreshUser();
       setSendFeedback({
@@ -122,15 +114,11 @@ export default function SendPage() {
     setCardLoading(true);
     setCardFeedback(null);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/cards/transfer",
-        { fromCardId: fromCard, toCardId: toCard, amount: parseFloat(cardAmount) },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.post(
+        "/cards/transfer",
+        { fromCardId: fromCard, toCardId: toCard, amount: parseFloat(cardAmount) }
       );
-      const res = await axios.get("http://localhost:5000/cards/my", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get("/cards/my");
       setCards(res.data);
       setCardFeedback({ type: "success", text: `Transfert de ${formatLocal(parseFloat(cardAmount), userCurrency)} effectué !` });
       setCardAmount("");
@@ -159,13 +147,13 @@ export default function SendPage() {
       </div>
 
       {/* Solde rapide */}
-      <div className="bg-[#F1F4FF] rounded-[28px] px-8 py-5 flex items-center justify-between">
+      <div className="bg-[var(--accent-soft)] rounded-[28px] px-8 py-5 flex items-center justify-between">
         <div>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Votre Solde Disponible ({userCurrency})</p>
+          <p className="text-[9px] font-bold text-[var(--accent)] uppercase tracking-[0.2em] mb-1">Votre Solde Disponible ({userCurrency})</p>
           <p className="text-3xl font-black text-slate-900 tracking-tight">{formatLocal(user?.balance || 0, userCurrency)}</p>
         </div>
         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-          <Send className="w-5 h-5 text-emerald-600" />
+          <Send className="w-5 h-5 text-[var(--accent)]" />
         </div>
       </div>
 
@@ -212,7 +200,7 @@ export default function SendPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={`p-4 rounded-2xl flex items-center gap-3 text-sm font-bold ${
-                    sendFeedback.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                    sendFeedback.type === "success" ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-red-50 text-red-600"
                   }`}
                 >
                   {sendFeedback.type === "success" ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
@@ -234,11 +222,11 @@ export default function SendPage() {
                     if (recipientEmail) setRecipientEmail(""); // Clear selection if typing
                   }}
                   placeholder="Ex: Jean Dupont ou jean@exemple.com"
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
                 />
                 {isSearching && (
                   <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
@@ -266,7 +254,7 @@ export default function SendPage() {
                           <p className="text-sm font-bold text-slate-900">{u.fullName}</p>
                           <p className="text-[10px] text-slate-400 font-medium">{u.email}</p>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all" />
                       </button>
                     ))}
                   </motion.div>
@@ -275,8 +263,8 @@ export default function SendPage() {
 
               {recipientEmail && !searchResults.length && (
                 <div className="flex items-center gap-2 mt-2 ml-1">
-                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Destinataire sélectionné : {recipientEmail}</p>
+                   <div className="w-2 h-2 bg-[var(--accent-soft)]0 rounded-full animate-pulse" />
+                   <p className="text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest">Destinataire sélectionné : {recipientEmail}</p>
                 </div>
               )}
             </div>
@@ -312,14 +300,14 @@ export default function SendPage() {
                 value={sendNote}
                 onChange={e => setSendNote(e.target.value)}
                 placeholder="Remboursement repas, cadeau…"
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm placeholder:text-slate-300 outline-none transition-colors"
               />
             </div>
 
             <button
               onClick={handleUserTransfer}
               disabled={sendLoading || !recipientEmail || !sendAmount}
-              className="w-full bg-[#065F46] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[#047857] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl shadow-emerald-900/10"
+              className="w-full bg-[var(--accent)] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[var(--accent-hover)] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl shadow-[var(--accent)]/10"
             >
               {sendLoading ? "Envoi en cours…" : <>Envoyer <ArrowRight className="w-5 h-5" /></>}
             </button>
@@ -341,7 +329,7 @@ export default function SendPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={`p-4 rounded-2xl flex items-center gap-3 text-sm font-bold ${
-                    cardFeedback.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                    cardFeedback.type === "success" ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-red-50 text-red-600"
                   }`}
                 >
                   {cardFeedback.type === "success" ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
@@ -365,7 +353,7 @@ export default function SendPage() {
                     <select
                       value={fromCard}
                       onChange={e => setFromCard(e.target.value)}
-                      className="w-full appearance-none bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm outline-none transition-colors"
+                      className="w-full appearance-none bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm outline-none transition-colors"
                     >
                       {cards.map(c => (
                         <option key={c._id} value={c._id} disabled={c._id === toCard}>
@@ -391,7 +379,7 @@ export default function SendPage() {
                     <select
                       value={toCard}
                       onChange={e => setToCard(e.target.value)}
-                      className="w-full appearance-none bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm outline-none transition-colors"
+                      className="w-full appearance-none bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-5 py-4 text-slate-900 font-bold text-sm outline-none transition-colors"
                     >
                       {cards.map(c => (
                         <option key={c._id} value={c._id} disabled={c._id === fromCard}>
@@ -432,7 +420,7 @@ export default function SendPage() {
                       <span>Vers</span><span>{getCardName(toCard)} ({getCardBalance(toCard)})</span>
                     </div>
                     <div className="flex justify-between text-sm font-black text-slate-900 border-t border-slate-100 pt-2 mt-2">
-                      <span>Montant</span><span className="text-emerald-600">{formatLocal(parseFloat(cardAmount), userCurrency)}</span>
+                      <span>Montant</span><span className="text-[var(--accent)]">{formatLocal(parseFloat(cardAmount), userCurrency)}</span>
                     </div>
                   </motion.div>
                 )}
@@ -440,7 +428,7 @@ export default function SendPage() {
                 <button
                   onClick={handleCardTransfer}
                   disabled={cardLoading || !fromCard || !toCard || !cardAmount || fromCard === toCard}
-                  className="w-full bg-[#065F46] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[#047857] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl shadow-emerald-900/10"
+                  className="w-full bg-[var(--accent)] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[var(--accent-hover)] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl shadow-[var(--accent)]/10"
                 >
                   {cardLoading ? "Transfert en cours…" : <>Transférer <ArrowRight className="w-5 h-5" /></>}
                 </button>

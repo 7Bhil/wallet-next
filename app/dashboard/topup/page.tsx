@@ -12,6 +12,7 @@ import {
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import api from "@/utils/api";
 import { CURRENCY_SYMBOLS, convertToBSD, formatBSD, formatLocal } from "@/utils/currency";
 
 export default function TopUp() {
@@ -99,7 +100,7 @@ export default function TopUp() {
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}
+              className={`p-4 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'bg-red-50 text-red-600'}`}
             >
               {message.text}
             </motion.div>
@@ -109,7 +110,7 @@ export default function TopUp() {
             {/* Amount Input */}
             <div className="space-y-3">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Montant à ajouter</label>
-              <div className="relative flex items-center justify-between border-b-2 border-slate-100 focus-within:border-emerald-500 transition-colors pb-2">
+              <div className="relative flex items-center justify-between border-b-2 border-slate-100 focus-within:border-[var(--accent)] transition-colors pb-2">
                 <input 
                   type="number" 
                   value={amount}
@@ -153,7 +154,7 @@ export default function TopUp() {
                       <button 
                         key={m}
                         onClick={() => setMethod(m)}
-                        className={`p-5 rounded-3xl border-2 flex flex-col gap-3 transition-all text-left ${isSelected ? "border-emerald-600 bg-emerald-50/30" : "border-slate-50 hover:border-slate-200"}`}
+                        className={`p-5 rounded-3xl border-2 flex flex-col gap-3 transition-all text-left ${isSelected ? "border-[var(--accent)] bg-[var(--accent-soft)]/30" : "border-slate-50 hover:border-slate-200"}`}
                       >
                         <span className="text-xs font-bold text-slate-900">{m}</span>
                         <span className="text-[10px] text-slate-400 font-medium">Frais: {(fees[m as keyof typeof fees] * 100)}%</span>
@@ -163,25 +164,37 @@ export default function TopUp() {
                </div>
             </div>
 
-            <div className="bg-slate-50/50 p-6 rounded-3xl space-y-3">
-               <div className="flex justify-between text-xs font-medium text-slate-500">
-                  <span>Frais de traitement ({(currentFee * 100).toFixed(0)}%)</span>
-                  <span>- {calculatedFee.toFixed(2)} {selectedCurrency}</span>
+            {/* Summary Block */}
+            <div className="rounded-3xl border border-[var(--card-border)] overflow-hidden">
+               {/* Fees row */}
+               <div className="flex justify-between items-center px-6 py-4 bg-[var(--nav-active)]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Frais de traitement</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-[var(--card-border)] text-[var(--muted)] font-bold">{(currentFee * 100).toFixed(0)}%</span>
+                  </div>
+                  <span className="text-sm font-bold text-[var(--muted)]">- {calculatedFee.toFixed(2)} {selectedCurrency}</span>
                </div>
-               <div className="h-px bg-slate-100" />
-               <div className="flex justify-between text-lg font-bold text-slate-900">
-                  <span>Vous recevrez</span>
-                  <span className="text-emerald-600">{formatLocal(arrivalAmount, userCurrency)}</span>
+
+               {/* Divider */}
+               <div className="h-px bg-[var(--card-border)]" />
+
+               {/* You receive row */}
+               <div className="flex justify-between items-center px-6 py-5 bg-[var(--card-bg)]">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)] mb-0.5">Vous recevrez</p>
+                    <span className="text-2xl font-black text-[var(--accent)] tracking-tight">{formatLocal(arrivalAmount, userCurrency)}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-[var(--muted)] font-medium">{netLocalAmount.toFixed(2)} {selectedCurrency}</p>
+                    <p className="text-[9px] text-[var(--muted)] font-medium">spread plateforme: 2%</p>
+                  </div>
                </div>
-               <p className="text-[10px] text-slate-400 font-medium">
-                 {netLocalAmount.toFixed(2)} {selectedCurrency} converti en {userCurrency} avec un spread de 2%
-               </p>
             </div>
 
             <button 
               onClick={handleRecharge}
               disabled={loading || !amount || parseFloat(amount) <= 0}
-              className="w-full bg-[#065F46] text-white py-5 rounded-2xl text-base font-bold shadow-xl shadow-emerald-900/10 hover:bg-[#047857] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full bg-[var(--accent)] text-white py-5 rounded-2xl text-base font-bold shadow-xl shadow-[var(--accent)]/10 hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {loading ? "Traitement..." : "Confirmer la Recharge"}
               <ArrowUpRight className="w-5 h-5" />
