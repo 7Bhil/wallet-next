@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VITCH | Virtual Cards, Real Control",
+  title: "VITCH",
   description: "Payments, Security, Freedom.",
 };
 
