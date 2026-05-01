@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wallet | Premium Concierge",
-  description: "Votre concierge financier premium. Gérez vos actifs avec élégance.",
+  title: "VITCH | Virtual Cards, Real Control",
+  description: "Payments, Security, Freedom.",
 };
 
 import { Providers } from "@/components/Providers";

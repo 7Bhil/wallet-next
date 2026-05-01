@@ -134,11 +134,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`w-[260px] bg-[var(--sidebar-bg)] border-r border-[var(--card-border)] flex flex-col p-6 fixed h-screen z-50 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Logo */}
         <div className="flex items-center justify-between mb-10">
-          <Link href="/dashboard" className="flex flex-col px-2">
-            <span className="text-xl font-black tracking-tight text-[var(--foreground)]">
-              Wallet<span className="text-[var(--accent)]">.</span>
-            </span>
-            <span className="text-[9px] font-bold text-[var(--accent)] uppercase tracking-[0.25em] mt-0.5 opacity-70">Premium Concierge</span>
+          <Link href="/dashboard" className="flex items-center gap-3 pl-1">
+            <img src="/logo.png" alt="VITCH Logo" className="w-10 h-10 rounded-xl shrink-0 object-contain shadow-md" />
+            <div className="flex flex-col">
+              <span className="text-xl font-black tracking-tight text-[var(--foreground)]">
+                VITCH<span className="text-[var(--accent)]">.</span>
+              </span>
+              <span className="text-[7.5px] font-bold text-[var(--accent)] uppercase tracking-[0.2em] mt-0.5 opacity-80">Virtual Cards &bull; Real Control</span>
+            </div>
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
             <X className="w-5 h-5" />

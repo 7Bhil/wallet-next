@@ -64,14 +64,14 @@ export default function Login() {
               Ravi de vous<br />revoir.
             </h2>
             <p className="text-slate-400 text-base md:text-lg max-w-[320px] leading-relaxed">
-              Accédez à votre espace sécurisé Wallet en un clic.
+              Accédez à votre espace sécurisé VITCH en un clic.
             </p>
           </div>
 
           <div className="relative z-10 mt-16 group opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
             <div className="w-full max-w-[380px] aspect-[1.58/1] bg-gradient-to-br from-[#1E293B] to-[#010614] p-8 rounded-[28px] border border-white/10 shadow-2xl flex flex-col justify-between relative">
               <div className="flex justify-between items-start">
-                <span className="text-[10px] tracking-[0.25em] text-slate-500 font-bold uppercase">Wallet Platinum</span>
+                <span className="text-[10px] tracking-[0.25em] text-slate-500 font-bold uppercase">VITCH Platinum</span>
                 <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center">
                   <div className="w-5 h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
                 </div>
