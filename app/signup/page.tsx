@@ -48,7 +48,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <motion.div 
         layout
         transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
