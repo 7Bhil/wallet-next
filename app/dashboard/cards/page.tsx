@@ -249,7 +249,7 @@ export default function VirtualCards() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Taux d'intérêt</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Frais de gestion</p>
                     <p className="text-sm font-bold text-[var(--accent)]">{card.interestRate || 0}%</p>
                   </div>
                 </div>
@@ -453,12 +453,12 @@ export default function VirtualCards() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
+                 {[
                   { 
                     type: 'STANDARD', 
                     name: 'Everyday Blue', 
                     limitValue: 100000, 
-                    rate: '5%', 
+                    rate: '0.5%', 
                     color: 'card-premium-blue', 
                     text: 'text-white',
                     desc: 'L\'élégance du bleu premium pour vos dépenses quotidiennes.'
@@ -467,7 +467,7 @@ export default function VirtualCards() {
                     type: 'PREMIUM', 
                     name: 'Gold Horizon', 
                     limitValue: 1000000, 
-                    rate: '12%', 
+                    rate: '1%', 
                     color: 'card-lustrous-gold', 
                     text: 'text-amber-950',
                     desc: 'Un éclat doré pour une liberté financière accrue.'
@@ -476,7 +476,7 @@ export default function VirtualCards() {
                     type: 'VIP MEMBER', 
                     name: 'Obsidian Black', 
                     limitValue: 30000000, 
-                    rate: '18%', 
+                    rate: '1.5%', 
                     color: 'card-glossy-black', 
                     text: 'text-white',
                     desc: 'Le noir absolu pour une exclusivité sans compromis.'
@@ -507,7 +507,7 @@ export default function VirtualCards() {
                         <span className="text-sm font-black text-slate-900">{formatLocal(tier.limitValue, user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Taux d'intérêt</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frais de gestion</span>
                         <span className="text-sm font-black text-[var(--accent)]">{tier.rate}</span>
                       </div>
                     </div>

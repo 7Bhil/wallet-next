@@ -7,21 +7,38 @@ import axios from "axios";
 import api from "@/utils/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Signup() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
+    currency: "USD"
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const isFormValid = formData.fullName && formData.email && formData.password;
+  React.useEffect(() => {
+    // Detect Currency via Timezone
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (tz.includes("Africa/Porto-Novo") || tz.includes("Africa/Abidjan") || tz.includes("Africa/Dakar") || tz.includes("Africa/Ouagadougou")) {
+        setFormData(prev => ({ ...prev, currency: "XOF" }));
+      } else if (tz.includes("Europe/Paris") || tz.includes("Europe/Berlin") || tz.includes("Africa/Libreville")) {
+        setFormData(prev => ({ ...prev, currency: "EUR" }));
+      } else if (tz.includes("Europe/London")) {
+        setFormData(prev => ({ ...prev, currency: "GBP" }));
+      }
+    } catch(e) {}
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const isFormValid = formData.fullName && formData.email && formData.password && formData.currency;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -30,15 +47,21 @@ export default function Signup() {
     setLoading(true);
     setMessage("");
     try {
-      await api.post("/auth/signup", {
+      const response = await api.post("/auth/signup", {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
+        currency: formData.currency
       });
-      setMessage("Compte créé avec succès ! Redirection vers la connexion...");
+
+      if (response.data.access_token) {
+        login(response.data.access_token);
+      }
+      
+      setMessage("Compte créé avec succès ! Ouverture du coffre...");
       
       setTimeout(() => {
-        router.push("/login");
+        router.push("/dashboard");
       }, 1500);
     } catch (error: any) {
       setMessage(error.response?.data?.message || "Une erreur est survenue.");
@@ -164,6 +187,26 @@ export default function Signup() {
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] block ml-1">Ma Devise (Principale)</label>
+                <div className="relative group">
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    className="w-full bg-[#F0F2FD] border-2 border-transparent rounded-[20px] py-[18px] px-6 focus:bg-white focus:border-slate-100 focus:ring-0 transition-all font-bold text-slate-900 appearance-none outline-none"
+                  >
+                    <option value="USD">Dollar Américain (USD)</option>
+                    <option value="XOF">Franc CFA (XOF)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="GBP">Livre Sterling (GBP)</option>
+                  </select>
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                     <span className="text-[10px] pr-2">▼</span>
+                  </div>
                 </div>
               </div>
 
