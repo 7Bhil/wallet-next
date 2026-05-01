@@ -104,7 +104,7 @@ export default function AdminDashboard() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button onClick={() => fetchData(token)} className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-slate-900">
+          <button onClick={() => fetchData()} className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-slate-900">
              <RefreshCcw className="w-4 h-4" />
           </button>
           <div className="h-10 w-px bg-slate-100 mx-2 hidden md:block" />
