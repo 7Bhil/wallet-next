@@ -14,11 +14,13 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
 import { formatBSD, formatLocal } from "@/utils/currency";
 
 export default function Dashboard() {
+  const router = useRouter();
   const { user } = useAuth();
   const [transactions, setTransactions] = React.useState<any[]>([]);
   const [cards, setCards] = React.useState<any[]>([]);
@@ -74,6 +76,36 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ALERTE : Forcer l'achat d'une carte - Style Premium corrigé pour mode sombre */}
+      {!loading && cards.length === 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-indigo-600 rounded-[32px] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group shadow-2xl shadow-indigo-500/10"
+        >
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+               <CardIcon className="w-8 h-8 text-white" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-xl font-black tracking-tight uppercase tracking-wider">Compte Limité</h4>
+              <p className="text-sm text-indigo-100 font-medium max-w-md leading-relaxed">
+                Débloquez les transferts et paiements en commandant votre première <span className="text-white font-bold underline underline-offset-4 decoration-indigo-300">carte virtuelle</span> maintenant.
+              </p>
+            </div>
+          </div>
+          <Link 
+            href="/dashboard/cards" 
+            className="relative z-10 bg-white text-indigo-600 px-10 py-4 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-xl shadow-black/10 active:scale-95"
+          >
+            Obtenir ma carte
+          </Link>
+          {/* Decorative elements */}
+          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-[80px]" />
+          <div className="absolute bottom-[-20%] left-[20%] w-40 h-40 bg-indigo-400/20 rounded-full blur-[60px]" />
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Balance Section */}
         <div className="lg:col-span-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[32px] p-8 flex flex-col justify-between shadow-sm">
@@ -190,6 +222,13 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
+
+              {/* VITCH LOGO */}
+              <div className="absolute bottom-8 right-8 flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all">
+                <img src="/logo.png" alt="VITCH" className="w-8 h-8 object-contain" />
+                <span className="text-[11px] font-black tracking-tighter">VITCH</span>
+              </div>
+
               <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-white/5 rounded-full blur-[100px]" />
             </motion.div>
           );
@@ -211,6 +250,7 @@ export default function Dashboard() {
                 <motion.div 
                   key={t._id}
                   whileHover={{ x: 5 }}
+                  onClick={() => router.push('/dashboard/transactions')}
                   className="bg-[var(--card-bg)] p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer border border-[var(--card-border)]/50"
                 >
                   <div className="flex items-center gap-4">
@@ -259,20 +299,6 @@ export default function Dashboard() {
              </div>
           </div>
 
-          {/* Quick Recharge */}
-          <div className="bg-[var(--card-bg)] rounded-[32px] p-6 shadow-sm border border-[var(--card-border)]">
-             <h4 className="text-sm font-bold text-[var(--foreground)] mb-6">Recharge Rapide</h4>
-             <div className="bg-[var(--nav-active)] p-3 rounded-xl flex items-center justify-between mb-6 group cursor-pointer hover:bg-[var(--card-border)] transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--card-border)]" />
-                  <p className="text-[12px] font-bold text-[var(--foreground)]">BNP Paribas</p>
-                </div>
-                <CheckCircle2 className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors" />
-             </div>
-             <button className="w-full bg-[var(--accent)] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[var(--accent-hover)] transition-all">
-                Recharger 500 {userCurrency}
-             </button>
-          </div>
         </div>
       </div>
     </div>

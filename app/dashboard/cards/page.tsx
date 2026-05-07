@@ -235,6 +235,12 @@ export default function VirtualCards() {
                     </div>
                   </div>
                 </div>
+
+                {/* VITCH LOGO */}
+                <div className="absolute bottom-6 right-6 flex items-center gap-2 opacity-60 grayscale group-hover:grayscale-0 transition-all">
+                  <img src="/logo.png" alt="VITCH" className="w-7 h-7 object-contain" />
+                  <span className="text-[10px] font-black tracking-tighter">VITCH</span>
+                </div>
                 
                 {/* Background Glow */}
                 {card.type === "VIP MEMBER" && <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-[var(--nav-active)]0/10 rounded-full blur-[60px]" />}
@@ -454,32 +460,35 @@ export default function VirtualCards() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                  {[
-                  { 
+                   { 
                     type: 'STANDARD', 
                     name: 'Everyday Blue', 
                     limitValue: 100000, 
-                    rate: '0.5%', 
+                    rate: '1%', 
+                    price: 200,
                     color: 'card-premium-blue', 
                     text: 'text-white',
-                    desc: 'L\'élégance du bleu premium pour vos dépenses quotidiennes.'
-                  },
-                  { 
-                    type: 'PREMIUM', 
-                    name: 'Gold Horizon', 
-                    limitValue: 1000000, 
-                    rate: '1%', 
-                    color: 'card-lustrous-gold', 
-                    text: 'text-amber-950',
-                    desc: 'Un éclat doré pour une liberté financière accrue.'
+                    desc: 'Idéal pour vos achats quotidiens sécurisés.'
                   },
                   { 
                     type: 'VIP MEMBER', 
                     name: 'Obsidian Black', 
                     limitValue: 30000000, 
-                    rate: '1.5%', 
+                    rate: '0.5%', 
+                    price: 300,
                     color: 'card-glossy-black', 
                     text: 'text-white',
-                    desc: 'Le noir absolu pour une exclusivité sans compromis.'
+                    desc: 'L\'exclusivité ultime pour les membres privilégiés.'
+                  },
+                  { 
+                    type: 'PREMIUM', 
+                    name: 'Gold Horizon', 
+                    limitValue: 1000000, 
+                    rate: '0.3%', 
+                    price: 500,
+                    color: 'card-lustrous-gold', 
+                    text: 'text-amber-950',
+                    desc: 'Le summum du contrôle financier et de la liberté.'
                   }
                 ].map((tier) => (
                   <motion.div 
@@ -494,7 +503,10 @@ export default function VirtualCards() {
                         <p className="text-[8px] font-bold opacity-50 uppercase tracking-widest">{tier.type}</p>
                         <div className="flex justify-between items-end">
                            <div className="text-[10px] font-mono tracking-widest opacity-80">•••• 8888</div>
-                           <div className="w-6 h-6 rounded-full bg-white/10" />
+                           <div className="flex items-center gap-1 opacity-60">
+                             <img src="/logo.png" alt="VITCH" className="w-5 h-5 object-contain" />
+                             <span className="text-[8px] font-black tracking-tighter">VITCH</span>
+                           </div>
                         </div>
                       </div>
                       <h5 className="font-black text-slate-900 text-lg mb-2">{tier.name}</h5>
@@ -502,6 +514,10 @@ export default function VirtualCards() {
                     </div>
                     
                     <div className="space-y-3 pt-6 border-t border-slate-50">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prix d&apos;achat</span>
+                        <span className="text-sm font-black text-slate-900">{formatLocal(tier.price, user?.currency || 'USD')}</span>
+                      </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
                         <span className="text-sm font-black text-slate-900">{formatLocal(tier.limitValue, user?.currency || 'USD')}</span>

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Mail, Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, ShieldCheck, Eye, EyeOff, ShoppingBag, Briefcase, Calculator } from "lucide-react";
+import { UserRole } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import axios from "axios";
 import api from "@/utils/api";
@@ -16,7 +17,8 @@ export default function Signup() {
     fullName: "",
     email: "",
     password: "",
-    currency: "USD"
+    currency: "USD",
+    role: "CLIENT" as UserRole
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -51,7 +53,8 @@ export default function Signup() {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-        currency: formData.currency
+        currency: formData.currency,
+        role: formData.role
       });
 
       if (response.data.access_token) {
@@ -129,6 +132,31 @@ export default function Signup() {
             <p className="text-slate-500 text-sm md:text-base mb-10 leading-relaxed">Commencez votre voyage vers la liberté financière.</p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Role Selection Tabs */}
+              <div className="space-y-2 mb-6">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] block ml-1">Type de compte</label>
+                <div className="flex bg-[#F0F2FD] p-1.5 rounded-[22px] gap-1">
+                  {[
+                    { id: "CLIENT", label: "Client", icon: ShoppingBag },
+                    { id: "AGENT", label: "Agent", icon: Calculator },
+                    { id: "MERCHANT", label: "Marchand", icon: Briefcase },
+                  ].map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, role: r.id as UserRole })}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${
+                        formData.role === r.id 
+                          ? "bg-white text-slate-900 shadow-sm" 
+                          : "text-slate-400 hover:text-slate-600"
+                      }`}
+                    >
+                      <r.icon className={`w-3.5 h-3.5 ${formData.role === r.id ? "text-slate-900" : "text-slate-400"}`} />
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] block ml-1">Nom complet</label>
                 <div className="relative group">

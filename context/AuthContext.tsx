@@ -9,11 +9,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X, CheckCircle2 } from "lucide-react";
 import { updateRates } from "@/utils/currency";
 
+export type UserRole = "CLIENT" | "AGENT" | "MERCHANT" | "SUPPORT" | "ADMIN" | "SUPER_ADMIN";
+
 interface User {
   id: string;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
   balance: number;
   cryptoBalance: number;
   currency: string;
@@ -120,6 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    try {
+      api.post("/audit/track", { section: "Logout" });
+    } catch (e) {}
     localStorage.removeItem("token");
     if (socketRef.current) {
       socketRef.current.disconnect();

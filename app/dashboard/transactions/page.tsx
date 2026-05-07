@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ArrowLeftRight
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
 import { formatLocal } from "@/utils/currency";
@@ -21,6 +21,8 @@ export default function Transactions() {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("All");
+  const [selectedTx, setSelectedTx] = useState<any>(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -36,9 +38,17 @@ export default function Transactions() {
     fetchTransactions();
   }, []);
 
+  const filteredTransactions = transactions.filter(t => {
+    if (activeTab === "All") return true;
+    const isCredit = ['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(t.type);
+    if (activeTab === "In") return isCredit;
+    if (activeTab === "Out") return !isCredit;
+    return true;
+  });
+
   const totalFees = transactions.filter(t => t.type === 'FEE' || (t.type === 'TOPUP' && t.fee)).reduce((acc, t) => acc + (t.fee || 0), 0);
   const netCashflow = transactions.reduce((acc, t) => {
-    const isCredit = ['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(t.type); // Simplifié pour la démo
+    const isCredit = ['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(t.type); 
     return acc + (isCredit ? t.amount : -Math.abs(t.amount));
   }, 0);
 
@@ -69,8 +79,12 @@ export default function Transactions() {
         </div>
         <div className="flex gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
            {["All", "In", "Out"].map(tab => (
-             <button key={tab} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${tab === "All" ? "bg-black text-white" : "text-slate-400 hover:text-slate-900"}`}>
-                {tab}
+             <button 
+               key={tab} 
+               onClick={() => setActiveTab(tab)}
+               className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? "bg-black text-white" : "text-slate-400 hover:text-slate-900"}`}
+             >
+                {tab === "In" ? "Entrées" : tab === "Out" ? "Sorties" : "Tout"}
              </button>
            ))}
         </div>
@@ -108,12 +122,16 @@ export default function Transactions() {
                  <div className="w-8 h-8 border-4 border-slate-100 border-t-[var(--accent)] rounded-full animate-spin" />
                  Chargement des données sécurisées...
               </div>
-            ) : transactions.map((t) => {
+            ) : filteredTransactions.map((t) => {
               const Icon = getIcon(t.type);
-              const isCredit = ['TOPUP', 'TRANSFER_IN'].includes(t.type);
+              const isCredit = ['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(t.type);
               
               return (
-                <div key={t._id} className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
+                <div 
+                  key={t._id} 
+                  onClick={() => setSelectedTx(t)}
+                  className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group cursor-pointer"
+                >
                   <div className="flex items-center gap-5">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-50 text-slate-400"}`}>
                       <Icon className="w-5 h-5" />
@@ -134,13 +152,59 @@ export default function Transactions() {
                 </div>
               );
             })}
-            {!loading && transactions.length === 0 && (
-              <div className="p-20 text-center text-slate-400 italic">
-                 Vous n'avez pas encore effectué de transactions.
+            {!loading && filteredTransactions.length === 0 && (
+              <div className="p-20 text-center text-slate-400 italic font-medium">
+                 Aucune transaction trouvée pour ce filtre.
               </div>
             )}
          </div>
       </div>
+
+      {/* Transaction Details Modal */}
+      <AnimatePresence>
+        {selectedTx && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedTx(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="w-full max-w-md bg-white rounded-[40px] overflow-hidden shadow-2xl relative z-10">
+               <div className={`p-10 text-center ${['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(selectedTx.type) ? "bg-[var(--accent-soft)]" : "bg-slate-50"}`}>
+                  <div className={`w-20 h-20 rounded-[32px] mx-auto flex items-center justify-center mb-6 shadow-xl ${['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(selectedTx.type) ? "bg-[var(--accent)] text-white" : "bg-white text-slate-900"}`}>
+                     {React.createElement(getIcon(selectedTx.type), { className: "w-10 h-10" })}
+                  </div>
+                  <h4 className="text-xl font-black text-slate-900 mb-1">{selectedTx.description}</h4>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedTx.type}</p>
+               </div>
+               
+               <div className="p-10 space-y-6">
+                  <div className="flex justify-between items-center pb-6 border-b border-slate-50">
+                     <p className="text-sm font-bold text-slate-400">Montant</p>
+                     <p className={`text-2xl font-black ${['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(selectedTx.type) ? "text-[var(--accent)]" : "text-slate-900"}`}>
+                        {['TOPUP', 'TRANSFER_IN', 'CARD_TRANSFER'].includes(selectedTx.type) ? "+" : "-"} {formatLocal(Math.abs(selectedTx.amount), selectedTx.targetCurrency || user?.currency || 'USD')}
+                     </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                     <div className="flex justify-between text-[11px]">
+                        <span className="font-bold text-slate-400 uppercase tracking-wider">Date</span>
+                        <span className="font-black text-slate-900">{new Date(selectedTx.createdAt).toLocaleString('fr-FR')}</span>
+                     </div>
+                     <div className="flex justify-between text-[11px]">
+                        <span className="font-bold text-slate-400 uppercase tracking-wider">Statut</span>
+                        <span className="font-black text-green-500 uppercase tracking-widest">Complété</span>
+                     </div>
+                     <div className="flex justify-between text-[11px]">
+                        <span className="font-bold text-slate-400 uppercase tracking-wider">ID Transaction</span>
+                        <span className="font-mono text-slate-400">#{selectedTx._id.slice(-8).toUpperCase()}</span>
+                     </div>
+                  </div>
+
+                  <div className="pt-8">
+                     <button onClick={() => setSelectedTx(null)} className="w-full bg-black text-white py-4 rounded-2xl font-bold text-sm hover:scale-[1.02] transition-all shadow-xl">Fermer</button>
+                  </div>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

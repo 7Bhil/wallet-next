@@ -116,7 +116,12 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] block">Mot de passe</label>
-                  <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest cursor-pointer hover:underline">Oublié ?</span>
+                  <span 
+                    onClick={() => alert("Veuillez contacter le support à support@vitch.com ou votre administrateur pour réinitialiser votre mot de passe.")}
+                    className="text-[10px] font-bold text-blue-500 uppercase tracking-widest cursor-pointer hover:underline"
+                  >
+                    Oublié ?
+                  </span>
                 </div>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-slate-900">

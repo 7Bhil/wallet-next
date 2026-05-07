@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CreditCard,
-  ArrowUpCircle,
+  ArrowDownCircle,
   History,
   Bell,
   Search,
@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { formatBSD } from "@/utils/currency";
+import { PageTracker } from "@/components/PageTracker";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,15 +33,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   let menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { name: "Cards", icon: CreditCard, href: "/dashboard/cards" },
-    { name: "Top-up", icon: ArrowUpCircle, href: "/dashboard/topup" },
+    { name: "Recharger", icon: ArrowDownCircle, href: "/dashboard/topup" },
     { name: "Envoyer", icon: Send, href: "/dashboard/send" },
     { name: "Transactions", icon: History, href: "/dashboard/transactions" },
     { name: "Profile", icon: User, href: "/dashboard/profile" },
   ];
 
-  if (user?.role === "ADMIN") {
+  if (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") {
     menuItems.push({ name: "Admin Terminal", icon: LayoutDashboard, href: "/dashboard/admin" });
-    menuItems.push({ name: "Analyses", icon: TrendingUp, href: "/dashboard/admin/finances" });
+    menuItems.push({ name: "Analyses", icon: TrendingUp, href: "/dashboard/admin/analytics" });
   }
 
   const getInitials = (name: string) =>
@@ -50,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-[var(--background)] transition-colors duration-300">
+      <PageTracker />
       {/* Mobile overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
