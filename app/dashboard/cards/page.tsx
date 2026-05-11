@@ -450,9 +450,30 @@ export default function VirtualCards() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-4xl bg-[#F8FAFC] rounded-[40px] bg-black p-8 md:p-10 shadow-2xl relative z-10 overflow-y-auto max-h-[90vh]"
+              className="w-full max-w-4xl bg-black rounded-[40px] p-8 md:p-10 shadow-2xl relative z-10 overflow-y-auto max-h-[90vh] border border-white/5"
             >
-                <div className="flex justify-between items-start mb-10">
+              {/* Processing Overlay */}
+              <AnimatePresence>
+                {isCreating && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6"
+                  >
+                    <div className="w-20 h-20 relative mb-6">
+                      <div className="absolute inset-0 border-4 border-[var(--accent)]/20 rounded-full" />
+                      <div className="absolute inset-0 border-4 border-t-[var(--accent)] rounded-full animate-spin" />
+                      <CreditCard className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-[var(--accent)]" />
+                    </div>
+                    <h3 className="text-2xl font-black text-white mb-2">Génération en cours...</h3>
+                    <p className="text-sm text-slate-400 max-w-xs">Nous sécurisons votre nouvelle carte virtuelle et créditons vos accès.</p>
+                    <p className="text-[10px] text-[var(--accent)] font-bold uppercase tracking-[0.3em] mt-8 animate-pulse">Ne fermez pas cette fenêtre</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex justify-between items-start mb-10">
                   <div>
                     <h4 className="text-3xl font-black text-slate-900 tracking-tight">Choisir votre carte</h4>
                     <p className="text-slate-500 font-medium text-sm mt-1">Sélectionnez le palier qui correspond à vos ambitions.</p>
