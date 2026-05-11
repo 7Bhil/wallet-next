@@ -476,7 +476,7 @@ export default function VirtualCards() {
                   </motion.div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-32">
+              <div className="flex flex-row overflow-x-auto gap-6 pb-12 snap-x px-4 no-scrollbar -mx-4 md:mx-0 md:grid md:grid-cols-3 md:overflow-x-visible md:pb-20">
                  {[
                    { 
                     type: 'STANDARD', 
@@ -513,7 +513,7 @@ export default function VirtualCards() {
                     key={tier.type}
                     whileHover={{ y: -8 }}
                     onClick={() => createCard(tier.type)}
-                    className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 cursor-pointer group hover:border-[var(--accent)] hover:shadow-xl hover:shadow-[var(--accent)]/10 transition-all flex flex-col justify-between"
+                    className="flex-shrink-0 w-[280px] md:w-auto bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 cursor-pointer group hover:border-[var(--accent)] hover:shadow-xl hover:shadow-[var(--accent)]/10 transition-all flex flex-col justify-between snap-center"
                   >
                     <div>
                       <div className={`aspect-[1.58/1] rounded-2xl mb-6 ${tier.color} ${tier.text} p-4 flex flex-col justify-between shadow-md relative overflow-hidden`}>
@@ -527,22 +527,22 @@ export default function VirtualCards() {
                            </div>
                         </div>
                       </div>
-                      <h5 className="font-black text-slate-900 text-lg mb-2">{tier.name}</h5>
-                      <p className="text-xs text-slate-400 font-medium leading-relaxed mb-6">{tier.desc}</p>
+                      <h5 className="font-black text-slate-900 text-base mb-1">{tier.name}</h5>
+                      <p className="text-[10px] text-slate-400 font-medium leading-relaxed mb-4">{tier.desc}</p>
                     </div>
                     
-                    <div className="space-y-3 pt-6 border-t border-slate-50">
+                    <div className="space-y-3 pt-4 border-t border-slate-50">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prix d&apos;achat</span>
-                        <span className="text-sm font-black text-slate-900">{formatLocal(convertFromBSD(tier.price, user?.currency || 'USD'), user?.currency || 'USD')}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Prix d&apos;achat</span>
+                        <span className="text-xs font-black text-slate-900">{formatLocal(convertFromBSD(tier.price, user?.currency || 'USD'), user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
-                        <span className="text-sm font-black text-slate-900">{formatLocal(convertFromBSD(tier.limitValue, user?.currency || 'USD'), user?.currency || 'USD')}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
+                        <span className="text-xs font-black text-slate-900">{formatLocal(convertFromBSD(tier.limitValue, user?.currency || 'USD'), user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frais de gestion</span>
-                        <span className="text-sm font-black text-[var(--accent)]">{tier.rate}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Frais</span>
+                        <span className="text-xs font-black text-[var(--accent)]">{tier.rate}</span>
                       </div>
                     </div>
                   </motion.div>
