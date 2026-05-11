@@ -39,11 +39,16 @@ export default function TopUp() {
     fetchRates();
   }, [user]);
 
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const fees = {
+    "MTN Mobile Money": 0.01,
+    "Moov Money": 0.01,
     "Bank Transfer": 0.01,
     "Credit Card": 0.03,
-    "Crypto": 0.05
   };
+
+  const isMobileMoney = method.includes("Mobile Money") || method.includes("Moov");
 
   const currentFee = fees[method as keyof typeof fees];
   const inputAmount = parseFloat(amount) || 0;
@@ -56,13 +61,17 @@ export default function TopUp() {
     if (!rates || !rates.fiatRates) return netLocalAmount;
     const rateFrom = rates.fiatRates[selectedCurrency] || 1;
     const rateTo = rates.fiatRates[userCurrency] || 1;
-    return (netLocalAmount / rateFrom) * rateTo * (1 - (rates.commission || 0.02));
+    return (netLocalAmount / rateFrom) * rateTo;
   };
 
   const arrivalAmount = getArrivalAmount();
 
   const handleRecharge = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
+    if (isMobileMoney && (!phoneNumber || phoneNumber.length < 8)) {
+      setMessage({ type: 'error', text: "Veuillez entrer un numéro de téléphone valide (8 chiffres)." });
+      return;
+    }
     
     setLoading(true);
     setMessage(null);
@@ -71,17 +80,19 @@ export default function TopUp() {
       await axios.post("http://localhost:5000/transactions/recharge", {
         amount: parseFloat(amount),
         currency: selectedCurrency,
-        description: `Top-up via ${method}`
+        description: `Recharge via ${method} ${isMobileMoney ? `(${phoneNumber})` : ''}`,
+        phoneNumber: isMobileMoney ? phoneNumber : undefined
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       await refreshUser();
-      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} → ${arrivalAmount.toFixed(2)} ${userCurrency} crédités !` });
+      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} réussie via ${method} !` });
       setAmount("");
+      setPhoneNumber("");
     } catch (error) {
       console.error("Recharge failed:", error);
-      setMessage({ type: 'error', text: "Erreur lors de la recharge. Réessayez." });
+      setMessage({ type: 'error', text: "Erreur lors de la recharge. Vérifiez votre solde mobile money." });
     } finally {
       setLoading(false);
     }
@@ -91,7 +102,7 @@ export default function TopUp() {
     <div className="max-w-4xl mx-auto space-y-10 py-6">
       <div className="space-y-2 text-center lg:text-left">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Recharger votre Compte</h1>
-        <p className="text-sm text-slate-500">Ajoutez des fonds instantanément à votre portefeuille sécurisé.</p>
+        <p className="text-sm text-slate-500">Ajoutez des fonds instantanément via Mobile Money ou Carte.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -131,7 +142,7 @@ export default function TopUp() {
             </div>
 
             <div className="flex flex-wrap gap-2 lg:gap-3">
-               {[50, 100, 500, 1000].map((val) => (
+               {[500, 2000, 5000, 10000].map((val) => (
                  <button 
                   key={val}
                   onClick={() => setAmount(prev => (parseFloat(prev || "0") + val).toString())}
@@ -147,22 +158,53 @@ export default function TopUp() {
             {/* Method Selector */}
             <div className="space-y-4">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Méthode de paiement</label>
-               <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.keys(fees).map((m) => {
-                    const isSelected = method === m;
+               <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { name: "MTN Mobile Money", color: "bg-[#FFCC00]", text: "text-blue-900", logo: "MTN" },
+                    { name: "Moov Money", color: "bg-[#005DA4]", text: "text-white", logo: "Moov" },
+                    { name: "Bank Transfer", color: "bg-slate-100", text: "text-slate-900", logo: "🏦" },
+                    { name: "Credit Card", color: "bg-slate-900", text: "text-white", logo: "💳" }
+                  ].map((m) => {
+                    const isSelected = method === m.name;
                     return (
                       <button 
-                        key={m}
-                        onClick={() => setMethod(m)}
-                        className={`p-5 rounded-3xl border-2 flex flex-col gap-3 transition-all text-left ${isSelected ? "border-[var(--accent)] bg-[var(--accent-soft)]/30" : "border-slate-50 hover:border-slate-200"}`}
+                        key={m.name}
+                        onClick={() => setMethod(m.name)}
+                        className={`p-4 rounded-2xl border-2 flex flex-col gap-2 transition-all text-left relative overflow-hidden ${isSelected ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/10" : "border-slate-50 hover:border-slate-200"}`}
                       >
-                        <span className="text-xs font-bold text-slate-900">{m}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">Frais: {(fees[m as keyof typeof fees] * 100)}%</span>
+                        <div className={`w-8 h-8 rounded-lg ${m.color} ${m.text} flex items-center justify-center font-black text-[8px] mb-1 shadow-sm`}>
+                          {m.logo}
+                        </div>
+                        <span className="text-[10px] font-black text-slate-900 truncate">{m.name}</span>
+                        <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">Frais: {(fees[m.name as keyof typeof fees] * 100)}%</span>
+                        {isSelected && <div className="absolute top-2 right-2 w-2 h-2 bg-[var(--accent)] rounded-full" />}
                       </button>
                     );
                   })}
                </div>
             </div>
+
+            {/* Phone Number Input for Mobile Money */}
+            {isMobileMoney && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="space-y-3 pt-4 border-t border-slate-50"
+              >
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Numéro de téléphone Bénin</label>
+                <div className="relative">
+                   <div className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400">+229</div>
+                   <input 
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                    placeholder="Numéro à 8 chiffres"
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-[var(--accent)] rounded-2xl px-16 py-4 text-slate-900 font-bold outline-none transition-all"
+                   />
+                </div>
+                <p className="text-[9px] text-slate-400 font-medium ml-1">Une demande de confirmation sera envoyée sur ce numéro.</p>
+              </motion.div>
+            )}
 
             {/* Summary Block */}
             <div className="rounded-3xl border border-[var(--card-border)] overflow-hidden">
