@@ -450,7 +450,7 @@ export default function VirtualCards() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-4xl bg-[#F8FAFC] rounded-[40px] p-8 md:p-10 shadow-2xl relative z-10 overflow-y-auto max-h-[90vh]"
+              className="w-full max-w-4xl bg-[#F8FAFC] rounded-[40px] bg-black p-8 md:p-10 shadow-2xl relative z-10 overflow-y-auto max-h-[90vh]"
             >
                 <div className="flex justify-between items-start mb-10">
                   <div>
