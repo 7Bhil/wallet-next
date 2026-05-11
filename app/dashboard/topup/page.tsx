@@ -68,11 +68,43 @@ export default function TopUp() {
 
   const handleRecharge = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
-    if (isMobileMoney && (!phoneNumber || phoneNumber.length < 8)) {
-      setMessage({ type: 'error', text: "Veuillez entrer un numéro de téléphone valide (8 chiffres)." });
+    
+    if (isMobileMoney) {
+      // @ts-ignore
+      const { openKkiapayWidget } = await import("kkiapay-react");
+      openKkiapayWidget({
+        amount: parseInt(amount),
+        api_key: process.env.NEXT_PUBLIC_KKIAPAY_PUBLIC_KEY,
+        sandbox: true,
+        phone: phoneNumber || undefined,
+        data: `Recharge via ${method}`,
+        callback: async (response: any) => {
+          if (response.status === "SUCCESS") {
+            setLoading(true);
+            try {
+              const token = localStorage.getItem("token");
+              await axios.post("http://localhost:5000/transactions/recharge/verify", {
+                transactionId: response.transactionId,
+                amount: parseFloat(amount),
+                currency: selectedCurrency,
+              }, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              await refreshUser();
+              setMessage({ type: 'success', text: "Paiement Kkiapay réussi ! Votre compte a été crédité." });
+              setAmount("");
+              setPhoneNumber("");
+            } catch (e) {
+              setMessage({ type: 'error', text: "Erreur lors de la validation du paiement." });
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      });
       return;
     }
-    
+
     setLoading(true);
     setMessage(null);
     try {
@@ -80,19 +112,17 @@ export default function TopUp() {
       await axios.post("http://localhost:5000/transactions/recharge", {
         amount: parseFloat(amount),
         currency: selectedCurrency,
-        description: `Recharge via ${method} ${isMobileMoney ? `(${phoneNumber})` : ''}`,
-        phoneNumber: isMobileMoney ? phoneNumber : undefined
+        description: `Recharge via ${method}`
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       await refreshUser();
-      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} réussie via ${method} !` });
+      setMessage({ type: 'success', text: `Recharge de ${amount} ${selectedCurrency} réussie !` });
       setAmount("");
-      setPhoneNumber("");
     } catch (error) {
       console.error("Recharge failed:", error);
-      setMessage({ type: 'error', text: "Erreur lors de la recharge. Vérifiez votre solde mobile money." });
+      setMessage({ type: 'error', text: "Erreur lors de la recharge. Réessayez." });
     } finally {
       setLoading(false);
     }
