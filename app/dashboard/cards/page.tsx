@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/utils/api";
-import { formatBSD, formatLocal } from "@/utils/currency";
+import { formatBSD, formatLocal, convertFromBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function VirtualCards() {
@@ -38,6 +38,7 @@ export default function VirtualCards() {
   const [transactions, setTransactions] = useState<any[]>([]);
    const [loadingTxn, setLoadingTxn] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const handleSetDefault = async (cardId: string) => {
     try {
@@ -66,12 +67,15 @@ export default function VirtualCards() {
   const createCard = async (type: string) => {
     if (cards.length >= 3) return;
     setIsCreating(true);
-    setShowSelector(false);
+    setFeedback(null);
     try {
       await api.post("/cards", { type });
       await fetchCards();
-    } catch (e) {
+      await refreshUser();
+      setShowSelector(false);
+    } catch (e: any) {
       console.error("Error creating card", e);
+      setFeedback(e?.response?.data?.message || "Erreur lors de la création de la carte.");
     } finally {
       setIsCreating(false);
     }
@@ -448,17 +452,31 @@ export default function VirtualCards() {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="w-full max-w-4xl bg-[#F8FAFC] rounded-[40px] p-8 md:p-10 shadow-2xl relative z-10 overflow-hidden"
             >
-              <div className="flex justify-between items-start mb-10">
-                <div>
-                  <h4 className="text-3xl font-black text-slate-900 tracking-tight">Choisir votre carte</h4>
-                  <p className="text-slate-500 font-medium text-sm mt-1">Sélectionnez le palier qui correspond à vos ambitions.</p>
+                <div className="flex justify-between items-start mb-10">
+                  <div>
+                    <h4 className="text-3xl font-black text-slate-900 tracking-tight">Choisir votre carte</h4>
+                    <p className="text-slate-500 font-medium text-sm mt-1">Sélectionnez le palier qui correspond à vos ambitions.</p>
+                  </div>
+                  <button onClick={() => setShowSelector(false)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors shadow-sm">
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button onClick={() => setShowSelector(false)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors shadow-sm">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {feedback && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    className="mb-8 p-5 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-4 text-red-600"
+                  >
+                    <AlertCircle className="w-6 h-6 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-black">Action Impossible</p>
+                      <p className="text-[11px] font-bold opacity-80">{feedback}</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                  {[
                    { 
                     type: 'STANDARD', 
@@ -516,11 +534,11 @@ export default function VirtualCards() {
                     <div className="space-y-3 pt-6 border-t border-slate-50">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prix d&apos;achat</span>
-                        <span className="text-sm font-black text-slate-900">{formatLocal(tier.price, user?.currency || 'USD')}</span>
+                        <span className="text-sm font-black text-slate-900">{formatLocal(convertFromBSD(tier.price, user?.currency || 'USD'), user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
-                        <span className="text-sm font-black text-slate-900">{formatLocal(tier.limitValue, user?.currency || 'USD')}</span>
+                        <span className="text-sm font-black text-slate-900">{formatLocal(convertFromBSD(tier.limitValue, user?.currency || 'USD'), user?.currency || 'USD')}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frais de gestion</span>
