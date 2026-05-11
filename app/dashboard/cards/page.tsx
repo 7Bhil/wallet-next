@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/utils/api";
-import { formatBSD, formatLocal, convertFromBSD } from "@/utils/currency";
+import { formatBSD, formatLocal, convertFromBSD, convertToBSD } from "@/utils/currency";
 import { useAuth } from "@/context/AuthContext";
 
 export default function VirtualCards() {
@@ -504,7 +504,7 @@ export default function VirtualCards() {
                     name: 'Everyday Blue', 
                     limitValue: 100000, 
                     rate: '1%', 
-                    price: 200,
+                    priceXOF: 200,
                     color: 'card-premium-blue', 
                     text: 'text-white',
                     desc: 'Idéal pour vos achats quotidiens sécurisés.'
@@ -514,7 +514,7 @@ export default function VirtualCards() {
                     name: 'Obsidian Black', 
                     limitValue: 30000000, 
                     rate: '0.5%', 
-                    price: 300,
+                    priceXOF: 300,
                     color: 'card-glossy-black', 
                     text: 'text-white',
                     desc: 'L\'exclusivité ultime pour les membres privilégiés.'
@@ -524,7 +524,7 @@ export default function VirtualCards() {
                     name: 'Gold Horizon', 
                     limitValue: 1000000, 
                     rate: '0.3%', 
-                    price: 500,
+                    priceXOF: 500,
                     color: 'card-lustrous-gold', 
                     text: 'text-amber-950',
                     desc: 'Le summum du contrôle financier et de la liberté.'
@@ -555,11 +555,15 @@ export default function VirtualCards() {
                     <div className="space-y-3 pt-4 border-t border-slate-50">
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Prix d&apos;achat</span>
-                        <span className="text-xs font-black text-slate-900">{formatLocal(convertFromBSD(tier.price, user?.currency || 'USD'), user?.currency || 'USD')}</span>
+                        <span className="text-xs font-black text-slate-900">
+                          {formatLocal(convertFromBSD(convertToBSD(tier.priceXOF, 'XOF'), user?.currency || 'USD'), user?.currency || 'USD')}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Plafond</span>
-                        <span className="text-xs font-black text-slate-900">{formatLocal(convertFromBSD(tier.limitValue, user?.currency || 'USD'), user?.currency || 'USD')}</span>
+                        <span className="text-xs font-black text-slate-900">
+                          {formatLocal(convertFromBSD(tier.limitValue, user?.currency || 'USD'), user?.currency || 'USD')}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Frais</span>
