@@ -22,3 +22,5 @@ export function PageTracker() {
 
   return null;
 }
+
+export default PageTracker;

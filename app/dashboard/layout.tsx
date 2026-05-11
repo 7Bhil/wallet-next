@@ -22,7 +22,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { formatBSD } from "@/utils/currency";
-import { PageTracker } from "@/components/PageTracker";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,8 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const unreadCount = persistentNotifications.length;
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)] transition-colors duration-300">
-      <PageTracker />
+    <div className="min-h-screen bg-[var(--background)] transition-colors duration-300">
       {/* Mobile overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -187,8 +185,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* ── MAIN ── */}
-      <main className="flex-1 lg:ml-[260px] w-full min-w-0">
+      {/* ── MAIN CONTENT AREA ── */}
+      <div className="lg:pl-[260px]">
         {/* Top Bar */}
         <header className="h-[68px] flex items-center justify-between px-4 lg:px-8 sticky top-0 bg-[var(--background)]/90 backdrop-blur-md z-30 border-b border-[var(--card-border)] transition-colors">
           <div className="flex items-center gap-3">
@@ -235,10 +233,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <div className="p-4 lg:p-8">
+        <main className="p-4 lg:p-8">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

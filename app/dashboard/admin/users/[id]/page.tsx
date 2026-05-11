@@ -11,6 +11,7 @@ import {
   Shield,
   Wallet,
   Clock,
+  Activity,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
@@ -27,13 +28,18 @@ export default function AdminUserAuditPage() {
   const userId = params.id as string;
 
   const [data, setData] = useState<any>(null);
+  const [userLogs, setUserLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
-      const res = await api.get(`/admin/users/${userId}`);
+      const [res, logsRes] = await Promise.all([
+        api.get(`/admin/users/${userId}`),
+        api.get(`/audit/user/${userId}`),
+      ]);
       setData(res.data);
+      setUserLogs(logsRes.data);
     } catch (err) {
       console.error("Failed to fetch user details", err);
     } finally {
@@ -196,47 +202,98 @@ export default function AdminUserAuditPage() {
       </div>
 
       {/* Transaction History */}
-      <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50">
-          <h2 className="text-lg font-bold text-slate-900">Historique des Transactions</h2>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">Les 50 dernières transactions</p>
-        </div>
-        {transactions?.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-bold">Aucune transaction.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-slate-50">
+            <h2 className="text-lg font-bold text-slate-900">Historique des Transactions</h2>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Les 50 dernières transactions</p>
           </div>
-        ) : (
-          <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
-            {transactions.map((tx: any) => {
-              const isCredit = ["TOPUP", "TRANSFER_IN"].includes(tx.type);
-              return (
-                <div key={tx._id} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+          {transactions?.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-bold">Aucune transaction.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {transactions.map((tx: any) => {
+                const isCredit = ["TOPUP", "TRANSFER_IN"].includes(tx.type);
+                return (
+                  <div key={tx._id} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-50 text-slate-400"}`}>
+                        {isCredit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{tx.description}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">
+                          {tx.type} • {new Date(tx.createdAt).toLocaleString("fr-FR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-black ${isCredit ? "text-[var(--accent)]" : "text-slate-700"}`}>
+                        {isCredit ? "+" : "-"}{formatLocal(tx.amount, tx.targetCurrency || user?.currency || 'USD')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Activity Logs (Audit) */}
+        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-slate-50">
+            <h2 className="text-lg font-bold text-slate-900">Logs d'Activité (Audit)</h2>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Navigation et connexions</p>
+          </div>
+          {userLogs.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <Activity className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-bold">Aucune activité enregistrée.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {userLogs.map((log: any) => (
+                <div key={log._id} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCredit ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-slate-50 text-slate-400"}`}>
-                      {isCredit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-400`}>
+                      <Clock className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-900">{tx.description}</p>
+                      <p className="text-sm font-bold text-slate-900">
+                        {log.action} {log.target ? `> ${log.target}` : ''}
+                      </p>
                       <p className="text-[10px] text-slate-400 font-medium">
-                        {tx.type} • {new Date(tx.createdAt).toLocaleString("fr-FR")}
+                        {new Date(log.createdAt).toLocaleString("fr-FR")}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-black ${isCredit ? "text-[var(--accent)]" : "text-slate-700"}`}>
-                      {isCredit ? "+" : "-"}{formatLocal(tx.amount, tx.targetCurrency || user?.currency || 'USD')}
-                    </p>
-                    <span className={`text-[9px] font-bold uppercase ${tx.status === "SUCCESS" ? "text-[var(--accent)]" : "text-red-400"}`}>
-                      {tx.status}
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter bg-slate-100 px-2 py-1 rounded-md">
+                      {log.ip || '0.0.0.0'}
                     </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+      
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 }

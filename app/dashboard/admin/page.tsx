@@ -52,16 +52,26 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes, feedRes, ratesRes] = await Promise.all([
+      const [statsRes, usersRes, feedRes, ratesRes, auditRes] = await Promise.all([
         api.get("/admin/stats"),
         api.get("/admin/users"),
         api.get("/admin/feed"),
         api.get("/currency/rates"),
+        api.get("/audit/stats"),
       ]);
       setStats(statsRes.data);
       setUsers(usersRes.data);
       setFeed(feedRes.data);
       setRatesData(ratesRes.data);
+
+      if (auditRes.data?.recentActivities) {
+        const realLogs = auditRes.data.recentActivities.map((act: any) => {
+          const time = new Date(act.createdAt).toLocaleTimeString();
+          const user = act.userId?.fullName || 'Guest';
+          return `[${time}] ${act.action}: ${user} ${act.target ? `> ${act.target}` : ''}`;
+        });
+        setLogs(realLogs);
+      }
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     } finally {
@@ -311,12 +321,12 @@ export default function AdminDashboard() {
                  </div>
                  <div className="h-40 overflow-y-auto space-y-2 font-mono text-[10px] custom-scrollbar pr-2">
                     {logs.map((log, i) => (
-                      <div key={i} className="flex gap-3 text-white/70">
-                         <span className="text-white/20">[{i}]</span>
-                         <span className={log.includes('SECURITY') ? 'text-red-400' : log.includes('AUTH') ? 'text-[var(--accent)]' : 'text-white/60'}>
-                            {log}
-                         </span>
-                      </div>
+                       <div key={i} className="flex gap-3 text-white/70">
+                          <span className="text-white/20">[{i}]</span>
+                          <span className={log.includes('SECURITY') || log.includes('FAILED') ? 'text-red-400' : log.includes('AUTH') || log.includes('LOGIN') || log.includes('SIGNUP') ? 'text-[var(--accent)]' : 'text-white/60'}>
+                             {log}
+                          </span>
+                       </div>
                     ))}
                  </div>
                  <div className="flex items-center gap-4 pt-4 border-t border-white/5">

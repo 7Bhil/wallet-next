@@ -279,7 +279,7 @@ export default function SendPage() {
                   value={sendAmount}
                   onChange={e => setSendAmount(e.target.value)}
                   placeholder="0.00"
-                  className="flex-1 text-4xl font-black bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-100 outline-none p-0"
+                  className="flex-1 text-2xl sm:text-4xl font-black bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-100 outline-none p-0 min-w-0"
                 />
               </div>
               <div className="flex gap-2 flex-wrap mt-2">

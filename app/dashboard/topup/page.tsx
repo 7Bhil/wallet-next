@@ -116,7 +116,7 @@ export default function TopUp() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="flex-1 text-5xl lg:text-6xl font-bold bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-100 p-0"
+                  className="flex-1 text-3xl sm:text-5xl lg:text-6xl font-bold bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-100 p-0 min-w-0"
                 />
                 <select 
                   value={selectedCurrency}
@@ -147,7 +147,7 @@ export default function TopUp() {
             {/* Method Selector */}
             <div className="space-y-4">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Méthode de paiement</label>
-               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+               <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.keys(fees).map((m) => {
                     const isSelected = method === m;
                     return (

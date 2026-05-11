@@ -111,7 +111,7 @@ export default function AdminAnalyticsPage() {
 
   const { 
     topSections, 
-    recentConnections, 
+    recentActivities, 
     activeUsersCountToday, 
     totalVolume, 
     systemRevenue, 
@@ -120,9 +120,10 @@ export default function AdminAnalyticsPage() {
     totalValueLocked
   } = data || {};
 
-  const filteredConnections = recentConnections?.filter((c: any) => 
+  const filteredActivities = recentActivities?.filter((c: any) => 
     c.userId?.fullName?.toLowerCase().includes(query.toLowerCase()) || 
-    c.userId?.email?.toLowerCase().includes(query.toLowerCase())
+    c.userId?.email?.toLowerCase().includes(query.toLowerCase()) ||
+    c.action?.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -238,7 +239,7 @@ export default function AdminAnalyticsPage() {
                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center">
                   <Activity className="w-5 h-5 text-[#D4AF37]" />
                </div>
-               <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter text-sm">Connexions Récentes</h2>
+               <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter text-sm">Flux d'Activité Global</h2>
             </div>
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -254,22 +255,29 @@ export default function AdminAnalyticsPage() {
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
-                   {filteredConnections?.map((conn: any) => (
-                     <tr key={conn._id} className="hover:bg-[#D4AF37]/5 transition-colors cursor-pointer group" onClick={() => openUserAudit(conn.userId)}>
-                       <td className="px-8 py-6 flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] font-black group-hover:bg-[#D4AF37] transition-colors">{conn.userId?.fullName?.slice(0, 2).toUpperCase()}</div>
-                          <div><p className="text-[13px] font-black">{conn.userId?.fullName}</p><p className="text-[10px] text-slate-400">{conn.userId?.email}</p></div>
-                       </td>
-                       <td className="px-8 py-6 font-bold text-[13px]">{new Date(conn.createdAt).toLocaleTimeString()}</td>
-                       <td className="px-8 py-6">
-                           <div className="flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-                              Audit <ChevronRight className="w-3 h-3" />
+                 <tbody className="divide-y divide-slate-50">
+                    {filteredActivities?.map((conn: any) => (
+                      <tr key={conn._id} className="hover:bg-[#D4AF37]/5 transition-colors cursor-pointer group" onClick={() => openUserAudit(conn.userId)}>
+                        <td className="px-8 py-6 flex items-center gap-4">
+                           <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] font-black group-hover:bg-[#D4AF37] transition-colors">{conn.userId?.fullName?.slice(0, 2).toUpperCase() || "GU"}</div>
+                           <div>
+                              <p className="text-[13px] font-black">{conn.userId?.fullName || "Visiteur"}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{conn.userId?.email || "Anonyme"}</p>
                            </div>
-                       </td>
-                     </tr>
-                   ))}
-                </tbody>
+                        </td>
+                        <td className="px-8 py-6">
+                           <p className="text-[11px] font-black uppercase text-slate-900">{conn.action}</p>
+                           <p className="text-[10px] text-slate-400 font-medium">{conn.target || 'N/A'}</p>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                            <p className="text-[11px] font-bold text-slate-600 mb-1">{new Date(conn.createdAt).toLocaleTimeString()}</p>
+                            <div className="flex items-center justify-end gap-2 text-[#D4AF37] text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+                               Détails <ChevronRight className="w-3 h-3" />
+                            </div>
+                        </td>
+                      </tr>
+                    ))}
+                 </tbody>
               </table>
           </div>
         </div>

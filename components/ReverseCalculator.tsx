@@ -58,26 +58,26 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
   }, [targetCurrency, inputValue, rates, mode, sourceCurrency]);
 
   return (
-    <div className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="bg-white rounded-[32px] p-4 sm:p-6 border border-slate-100 shadow-sm space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-lg shadow-slate-900/20">
+          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-lg shadow-slate-900/20 shrink-0">
             <Calculator className="w-4 h-4 text-white" />
           </div>
           <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Calculateur de Frais</h4>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex bg-slate-50 p-1 rounded-xl">
+        <div className="flex bg-slate-50 p-1 rounded-xl w-full sm:w-auto">
           <button 
             onClick={() => setMode("TARGET")}
-            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "TARGET" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400"}`}
+            className={`flex-1 sm:flex-none px-3 py-1.5 text-[9px] sm:text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "TARGET" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400"}`}
           >
             Objectif (Cible)
           </button>
           <button 
             onClick={() => setMode("SOURCE")}
-            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "SOURCE" ? "bg-white text-[var(--accent)] shadow-sm" : "text-slate-400"}`}
+            className={`flex-1 sm:flex-none px-3 py-1.5 text-[9px] sm:text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider ${mode === "SOURCE" ? "bg-white text-[var(--accent)] shadow-sm" : "text-slate-400"}`}
           >
             Montant (Source)
           </button>
@@ -87,7 +87,7 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
       <div className="space-y-4">
         {/* Input Form */}
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase">
                 {mode === "TARGET" ? "Il (Elle) doit recevoir" : "Vous envoyez"}
@@ -129,13 +129,13 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`p-6 rounded-2xl border flex items-center justify-between shadow-inner bg-[var(--accent-soft)] border-[var(--accent)]/20`}
+              className={`p-5 sm:p-6 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-inner bg-[var(--accent-soft)] border-[var(--accent)]/20`}
             >
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">
                   {mode === "TARGET" ? `Montant à débiter (${sourceCurrency})` : `Le destinataire recevra (${targetCurrency})`}
                 </p>
-                <p className="text-3xl font-black tracking-tight text-[var(--foreground)]">
+                <p className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--foreground)]">
                   {result.toFixed(2)} {mode === "TARGET" ? sourceCurrency : targetCurrency}
                 </p>
               </div>
@@ -143,7 +143,7 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
               {mode === "TARGET" && (
                 <button 
                   onClick={() => onCalculate?.(Number(result.toFixed(2)))}
-                  className="flex items-center gap-2 px-6 py-3 bg-[var(--accent)] text-black rounded-xl text-xs font-bold hover:bg-[var(--accent-hover)] transition-all uppercase tracking-wider shadow-lg shadow-[var(--accent)]/20 hover:-translate-y-0.5"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--accent)] text-black rounded-xl text-[10px] font-black hover:bg-[var(--accent-hover)] transition-all uppercase tracking-wider shadow-lg shadow-[var(--accent)]/20 active:scale-95"
                 >
                   Appliquer
                 </button>
@@ -156,7 +156,7 @@ export default function ReverseCalculator({ onCalculate }: ReverseCalculatorProp
           <Info className="w-4 h-4 text-[var(--muted)] shrink-0 mt-0.5" />
           <p className="text-[10px] text-[var(--muted)] font-medium leading-relaxed">
             Note: Transfert direct de {sourceCurrency} vers {targetCurrency}. 
-            Le taux inclut une commission de plateforme de {rates?.commission ? rates.commission * 100 : 2}%.
+            Le taux inclut une commission de plateforme de {rates?.commission ? (rates.commission * 100).toFixed(1) : 2}%.
           </p>
         </div>
       </div>
